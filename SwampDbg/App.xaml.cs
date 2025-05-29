@@ -11,7 +11,9 @@ using System.Windows;
 /// </summary>
 public partial class App : Application
 {
-	private static IConfiguration _config = null;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+	private static IConfiguration _config;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 	public App()
 		: base()
@@ -35,6 +37,7 @@ public partial class App : Application
 
 		// Create the startup window
 		MainWindow wnd = new MainWindow();
+
 		wnd.Show();
 
 		Trace.WriteLine("Started");

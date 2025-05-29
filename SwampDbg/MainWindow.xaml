@@ -6,41 +6,51 @@
         xmlns:local="clr-namespace:SwampDbg"
         mc:Ignorable="d"
         Title="SwampDbg" Height="450" Width="800">
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File">
-                <MenuItem Header="_Open">
-                    <MenuItem Header="_File" Click="OnOpenFile"/>
-                    <MenuItem Header="_Project"  Click="OnOpenProject"/>
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="_Exit" />
-            </MenuItem>
-            <MenuItem Header="_Tools">
-                <MenuItem Header="_Configure1" />
-                <MenuItem Header="_Configure2" />
-            </MenuItem>
-            <MenuItem Header="_Plugins">
-                <MenuItem Header="_Configure" />
-                <MenuItem Header="_Unload" />
-            </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_About" />
-            </MenuItem>
-        </Menu>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Button Grid.Column="0" Grid.Row="0">Button 1</Button>
-            <Button Grid.Column="2" Grid.Row="0">Button 3</Button>
-        </Grid>
-    </DockPanel>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<StackPanel Grid.Row="0">
+			<Menu Name="mnMainMenu" DockPanel.Dock="Top">
+				<MenuItem Header="_File">
+					<MenuItem Header="_Open">
+						<MenuItem Header="_File"/>
+						<MenuItem Header="_Project"/>
+					</MenuItem>
+					<Separator />
+					<MenuItem Header="_Exit" />
+				</MenuItem>
+				<MenuItem Header="_Tools">
+					<MenuItem Header="_Configure1" />
+					<MenuItem Header="_Configure2" />
+				</MenuItem>
+				<MenuItem Header="_Plugins">
+					<MenuItem Header="_Configure" />
+					<MenuItem Header="_Unload" />
+				</MenuItem>
+				<MenuItem Header="_Help">
+					<MenuItem Header="_About" />
+				</MenuItem>
+			</Menu>
+			<ToolBarTray DockPanel.Dock="Top">
+				<ToolBar>
+					<Button Command="New" Content="New" />
+					<Button Command="Open" Content="Open" />
+					<Button Command="Save" Content="Save" />
+				</ToolBar>
+				<ToolBar>
+					<Button Command="Cut" Content="Cut" />
+					<Button Command="Copy" Content="Copy" />
+					<Button Command="Paste" Content="Paste" />
+				</ToolBar>
+			</ToolBarTray>
+		</StackPanel>
+
+		<!-- Status Bar -->
+		<TextBox AcceptsReturn="True" Grid.Row="2" Text="Statusbar"/>
+	</Grid>
 </Window>
