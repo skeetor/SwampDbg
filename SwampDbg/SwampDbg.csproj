@@ -11,6 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\Icons\ArrowBlueLeft.png" />
+    <None Remove="Images\Icons\ArrowBlueLeftActive.png" />
+    <None Remove="Images\Icons\ArrowBlueLeftInactive.png" />
+    <None Remove="Images\Icons\ArrowBlueRightInactive.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Dirkster.AvalonDock" Version="4.72.1" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.72.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
@@ -27,6 +34,21 @@
 
   <ItemGroup>
     <Folder Include="Panels\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\Icons\ArrowBlueLeftActive.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Icons\ArrowBlueLeftInactive.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Icons\ArrowBlueRightActive.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\Icons\ArrowBlueRightInactive.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

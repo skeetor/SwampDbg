@@ -38,14 +38,12 @@
 			</Menu>
 			<ToolBarTray DockPanel.Dock="Top">
 				<ToolBar>
-					<Button Command="New" Content="New" />
-					<Button Command="Open" Content="Open" />
-					<Button Command="Save" Content="Save" />
+					<Button Content="{StaticResource ArrowBlueLeftInactive}" Width="24" Height="24"/>
+					<Button Content="{StaticResource ArrowBlueRightInactive}" Width="24" Height="24"/>
 				</ToolBar>
 				<ToolBar>
-					<Button Command="Cut" Content="Cut" />
-					<Button Command="Copy" Content="Copy" />
-					<Button Command="Paste" Content="Paste" />
+					<Button Content="{StaticResource ArrowBlueLeftActive}" Width="24" Height="24"/>
+					<Button Content="{StaticResource ArrowBlueRightActive}" Width="24" Height="24"/>
 				</ToolBar>
 			</ToolBarTray>
 		</StackPanel>
