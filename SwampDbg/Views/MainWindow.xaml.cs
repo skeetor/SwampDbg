@@ -18,9 +18,6 @@ namespace SwampDbg
 
 		private void UpdateFromConfig(GeneralConfig config)
 		{
-			//pnlDockPanel.SetValue(DockPanel.DockProperty, Dock.Bottom);
-			//pnlDockPanel.Children.Add(menu);
-
 			// If set to null the default is used.
 			if (config.MenuPosition != null)
 			{

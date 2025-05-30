@@ -10,5 +10,11 @@
 		<Image x:Key="ArrowBlueLeftInactive" Source="/SwampDbg;component/Images/Icons/ArrowBlueLeftInactive.png" />
 		<Image x:Key="ArrowBlueRightActive" Source="/SwampDbg;component/Images/Icons/ArrowBlueRightActive.png" />
 		<Image x:Key="ArrowBlueRightInactive" Source="/SwampDbg;component/Images/Icons/ArrowBlueRightInactive.png" />
+		<Image x:Key="Browse" Source="/SwampDbg;component/Images/Icons/Browse.png" />
+		<Image x:Key="File" Source="/SwampDbg;component/Images/Icons/File.png" />
+		<Image x:Key="Folder" Source="/SwampDbg;component/Images/Icons/Folder.png" />
+		<Image x:Key="Refresh" Source="/SwampDbg;component/Images/Icons/Refresh.png" />
+		<Image x:Key="Lock" Source="/SwampDbg;component/Images/Icons/Lock.png" />
+		<Image x:Key="Unlock" Source="/SwampDbg;component/Images/Icons/Unlock.png" />
 	</Application.Resources>
 </Application>
