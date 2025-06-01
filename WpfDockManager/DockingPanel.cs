@@ -46,9 +46,8 @@ namespace WpfDockManager
 		Center
 	}
 
-	//[ContentProperty(nameof(Children))]
-	//public class DockingPanel : ContentControl
-	public class DockingPanel : Panel
+	[ContentProperty(nameof(Children))]
+	public class DockingPanel : ContentControl
 	{
 		private List<UIElement> _children;
 		public static DockingPanel? Root;
@@ -89,7 +88,6 @@ namespace WpfDockManager
 			UIElement? child = depObj as UIElement;
 			if (child == null)
 				return;
-
 
 			DockingPanel? p = VisualTreeHelper.GetParent(child) as DockingPanel;
 			if (p == null)
@@ -146,50 +144,39 @@ namespace WpfDockManager
 		}
 
 		//[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-		//public List<UIElement> Children
-		//{
-		//	get
-		//	{
-		//		return _children;
-		//	}
-		//}
-
-		//[EditorBrowsable(EditorBrowsableState.Never)]
-		//public bool ShouldSerializeChildren()
-		//{
-		//	if (Children != null && Children.Count > 0)
-		//	{
-		//		return true;
-		//	}
-
-		//	return false;
-		//}
-		protected override UIElementCollection CreateUIElementCollection(FrameworkElement logicalParent)
+		public List<UIElement> Children
 		{
-			return base.CreateUIElementCollection(logicalParent);
+			get
+			{
+				return _children;
+			}
 		}
-
 		protected override Size MeasureOverride(Size availableSize)
 		{
-			Size desiredSize = new Size();
+			//Size desiredSize = new Size();
 			foreach (UIElement child in Children)
 			{
-				child.Measure(availableSize);
-				desiredSize.Width = Math.Max(desiredSize.Width, child.DesiredSize.Width);
-				desiredSize.Height += child.DesiredSize.Height;
+				var parent = VisualTreeHelper.GetParent(child);
+				if (parent == null)
+					System.Console.WriteLine("test");
+				//child.Measure(availableSize);
+				//desiredSize.Width = Math.Max(desiredSize.Width, child.DesiredSize.Width);
+				//desiredSize.Height += child.DesiredSize.Height;
 			}
-			return desiredSize;
+			//return desiredSize;
+			return new Size(500, 200);
 		}
 
 		//protected override Size ArrangeOverride(Size finalSize)
 		//{
-		//	double currentY = 0;
-		//	foreach (UIElement child in Children)
-		//	{
-		//		child.Arrange(new Rect(0, currentY, finalSize.Width, child.DesiredSize.Height));
-		//		currentY += child.DesiredSize.Height;
-		//	}
-		//	return finalSize;
+		//	return new Size(100, 200);
+		//	//double currentY = 0;
+		//	//foreach (UIElement child in Children)
+		//	//{
+		//	//	child.Arrange(new Rect(0, currentY, finalSize.Width, child.DesiredSize.Height));
+		//	//	currentY += child.DesiredSize.Height;
+		//	//}
+		//	//return finalSize;
 		//}
 	}
 }
