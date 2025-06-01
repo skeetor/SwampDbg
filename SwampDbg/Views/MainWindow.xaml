@@ -4,6 +4,7 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:local="clr-namespace:SwampDbg"
+	xmlns:WpfDockManagerNS="clr-namespace:WpfDockManager;assembly=WpfDockManager"
 	mc:Ignorable="d"
 	Title="SwampDbg" Height="450" Width="800">
 
@@ -47,6 +48,41 @@
 				</ToolBar>
 			</ToolBarTray>
 		</StackPanel>
+
+		<WpfDockManagerNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
+			<Button Name="TestButtonLeft" WpfDockManagerNS:DockingPanel.Dock="Left">MyButtonTitleLeft</Button>
+			<Button Name="TestButtonRight" WpfDockManagerNS:DockingPanel.Dock="Right">MyButtonTitleRight</Button>
+			<Button Name="TestButtonTop" WpfDockManagerNS:DockingPanel.Dock="Top">MyButtonTitleTop</Button>
+			<Button Name="TestButtonBottom" WpfDockManagerNS:DockingPanel.Dock="Bottom">MyButtonTitleBottom</Button>
+			<Button Name="TestButtonCenter">MyButtonTitleCenter</Button>
+		</WpfDockManagerNS:DockingPanel>
+
+		<!-- <DockPanel Grid.Row="1" Name="MainDockPanel">
+			<Button Name="TestButtonTop" DockPanel.Dock="Top">Top</Button>
+			<Button Name="TestButtonLeft" DockPanel.Dock="Left">Left</Button>
+			<Button Name="TestButtonRight" DockPanel.Dock="Right">Right</Button>
+			<Button Name="TestButtonBottom" DockPanel.Dock="Bottom">Bottom</Button>
+			<Button Name="TestButtonCenter" >Center</Button>
+		</DockPanel>
+		-->
+
+		<!-- <DockPanel Grid.Row="1" Name="MainDockPanel">
+			<Button DockPanel.Dock="Left">Left</Button>
+			<Button DockPanel.Dock="Top">Top</Button>
+			<Button DockPanel.Dock="Right">Right</Button>
+			<Button DockPanel.Dock="Bottom">Bottom</Button>
+			<TabControl>
+				<TabItem Header="Tab 1 Item">
+					<Label Content="Content goes here..." />
+				</TabItem>
+				<TabItem Header="Tab 2 Item">
+					<Label Content="Content goes here also..." />
+				</TabItem>
+			</TabControl>
+		</DockPanel>
+		-->
+
+		<!-- <Custom:FileTreeControl Grid.Row="1" Grid.Column="0"/> -->
 
 		<!-- Status Bar -->
 		<TextBox AcceptsReturn="True" Grid.Row="2" Text="Statusbar"/>
