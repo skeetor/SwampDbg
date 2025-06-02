@@ -51,12 +51,14 @@ namespace WpfDockManager
 
 	public class DockingPanel : Panel
 	{
-		private UIElement? _centerChild;
+		private TabControl _centerTab;
+		private UIElement _centerChild;
 		private UIElement? _topChild;
 		private UIElement? _bottomChild;
 		private UIElement? _leftChild;
 		private UIElement? _rightChild;
 
+		#region Dock property
 		//public static readonly DependencyProperty DockProperty =
 		//	DockPanel.DockProperty.AddOwner(typeof(DockingPanel));
 		//[CommonDependencyProperty]
@@ -112,6 +114,33 @@ namespace WpfDockManager
 		{
 			ArgumentNullException.ThrowIfNull(element);
 			element.SetValue(DockProperty, value);
+		}
+		#endregion Dock property
+		public DockingPanel()
+			: base()
+		{
+			_centerTab = new TabControl();
+
+			var grid = CreateDefaultGrid();
+			grid.Children.Add(_centerTab);
+			Grid.SetRow(_centerTab, 0);
+			Grid.SetColumn(_centerTab, 0);
+			_centerChild = grid;
+		}
+
+		private Grid CreateDefaultGrid()
+		{
+			// We create a grid that always spans the full window
+			var grid = new Grid();
+			RowDefinition row = new RowDefinition();
+			row.Height = new GridLength(1.0, GridUnitType.Star);
+			grid.RowDefinitions.Add(row);
+
+			ColumnDefinition column = new ColumnDefinition();
+			column.Width = new GridLength(1.0, GridUnitType.Star);
+			grid.ColumnDefinitions.Add(column);
+
+			return grid;
 		}
 
 		protected override Size MeasureOverride(Size availableSize)
@@ -222,16 +251,16 @@ namespace WpfDockManager
 					case DockType.None:
 						return;
 
-					default: // Dock.Fill or anything else
-						if (_centerChild != null)
-						{
-							ReplaceChild(_centerChild, elementAdded);
-						}
-						else
-						{
-							_centerChild = elementAdded;
-						}
-						break;
+					default: // DockType.Center or anything else
+					{
+						RemoveElementFromItsParent(elementAdded as FrameworkElement);
+
+						TabItem ti = new TabItem();
+						ti.Header = "New Tab";
+						ti.Content = elementAdded;
+						_centerTab.Items.Add(ti);
+					}
+					break;
 				}
 
 				InvalidateMeasure();
@@ -243,7 +272,6 @@ namespace WpfDockManager
 				if (elementRemoved == _bottomChild) _bottomChild = null;
 				if (elementRemoved == _leftChild) _leftChild = null;
 				if (elementRemoved == _rightChild) _rightChild = null;
-				if (elementRemoved == _centerChild) _centerChild = null;
 
 				InvalidateMeasure();
 			}
@@ -343,9 +371,6 @@ namespace WpfDockManager
 
 				if (oldChild == _rightChild)
 					_rightChild = container;
-
-				if (oldChild == _centerChild)
-					_centerChild = container;
 			}
 		}
 	}
