@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WpfDockManager
 {
@@ -39,6 +41,7 @@ namespace WpfDockManager
 
 	public enum DockType
 	{
+		None,
 		Left,
 		Top,
 		Right,
@@ -54,9 +57,51 @@ namespace WpfDockManager
 		private UIElement? _leftChild;
 		private UIElement? _rightChild;
 
+		//public static readonly DependencyProperty DockProperty =
+		//	DockPanel.DockProperty.AddOwner(typeof(DockingPanel));
+		//[CommonDependencyProperty]
 		public static readonly DependencyProperty DockProperty =
-			DockPanel.DockProperty.AddOwner(typeof(DockingPanel));
+				DependencyProperty.RegisterAttached(
+						"Dock",
+						typeof(DockType),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							DockType.None,
+							new PropertyChangedCallback(OnDockChanged)),
+						new ValidateValueCallback(IsValidDock)
+				);
+		internal static bool IsValidDock(object o)
+		{
+			DockType dock = (DockType)o;
 
+			return (dock == DockType.Left
+					|| dock == DockType.Top
+					|| dock == DockType.Right
+					|| dock == DockType.Bottom
+					|| dock == DockType.Center
+					|| dock == DockType.None
+					);
+		}
+		private static void OnDockChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
+		{
+			UIElement? child = depObj as UIElement;
+			if (child == null)
+				return;
+
+			DockType dock = (DockType)e.OldValue;
+			if ((DockType)e.OldValue == DockType.None && (DockType)e.NewValue != DockType.None)
+			{
+				DockingPanel? p = VisualTreeHelper.GetParent(child) as DockingPanel;
+				if (p == null)
+					return;
+
+				// TODO: This is an ugly hack, because OnVisualChildrenChanged is called before the
+				// attached property is set, so we don'tknow where the child should be positioned.
+				// It seems there is no way to enforce an update, so we remove the child and reinsert it.
+				p.InternalChildren.Remove(child as UIElement);
+				p.InternalChildren.Add(child as UIElement);
+			}
+		}
 		public static DockType GetDock(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
@@ -162,6 +207,7 @@ namespace WpfDockManager
 							_leftChild = elementAdded;
 						}
 						break;
+
 					case DockType.Right:
 						if (_rightChild != null)
 						{
@@ -172,6 +218,9 @@ namespace WpfDockManager
 							_rightChild = elementAdded;
 						}
 						break;
+
+					case DockType.None:
+						return;
 
 					default: // Dock.Fill or anything else
 						if (_centerChild != null)
@@ -199,7 +248,7 @@ namespace WpfDockManager
 				InvalidateMeasure();
 			}
 		}
-		public static void RemoveElementFromItsParent(FrameworkElement el)
+		public static void RemoveElementFromItsParent(FrameworkElement? el)
 		{
 			if (el == null)
 				return;
@@ -233,17 +282,47 @@ namespace WpfDockManager
 				contentControl.Content = null;
 		}
 
+		private UIElement? GetContainerDocklement(UIElement? child)
+		{
+			if (child == null)
+				return null;
+
+			if (child == _topChild)
+				return _topChild;
+
+			if (child == _bottomChild)
+				return _bottomChild;
+
+			if (child == _leftChild)
+				return _leftChild;
+
+			if (child == _rightChild)
+				return _rightChild;
+
+			if (child == _centerChild)
+				return _centerChild;
+
+			return null;
+		}
+
 		private void ReplaceChild(UIElement oldChild, UIElement newChild)
 		{
+			//var dockType = GetDock(oldChild);
+			//dockType = GetDock(newChild);
+			//dockType = GetDock(this);
+
 			// Disconnect from parent first, before we can add it to the grid.
 			RemoveElementFromItsParent(oldChild as FrameworkElement);
-			RemoveElementFromItsParent(newChild as FrameworkElement);
+			//RemoveElementFromItsParent(newChild as FrameworkElement);
 			//parent.RemoveLogicalChild(oldChild);
+			//var parent = VisualTreeHelper.GetParent(oldChild);
 
 			// Create a container (e.g., a Grid) to hold both old and new children
-			Grid container = new Grid();
-			container.Children.Add(oldChild);
-			container.Children.Add(newChild);
+			//TabControl tabCtrl = 
+			//Grid container = new Grid();
+			//container.Children.Add(oldChild);
+			//container.Children.Add(newChild);
+			UIElement container = newChild;
 
 			// Replace the old child with the container in the visual tree
 			int index = InternalChildren.IndexOf(oldChild);
