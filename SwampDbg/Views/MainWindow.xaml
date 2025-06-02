@@ -52,9 +52,11 @@
 		<WpfDockManagerNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
 			<Button Name="TestButtonLeft" WpfDockManagerNS:DockingPanel.Dock="Left">MyButtonTitleLeft</Button>
 			<Button Name="TestButtonRight" WpfDockManagerNS:DockingPanel.Dock="Right">MyButtonTitleRight</Button>
+			<!--
 			<Button Name="TestButtonTop" WpfDockManagerNS:DockingPanel.Dock="Top">MyButtonTitleTop</Button>
 			<Button Name="TestButtonBottom" WpfDockManagerNS:DockingPanel.Dock="Bottom">MyButtonTitleBottom</Button>
 			<Button Name="TestButtonCenter">MyButtonTitleCenter</Button>
+			-->
 		</WpfDockManagerNS:DockingPanel>
 
 		<!-- <DockPanel Grid.Row="1" Name="MainDockPanel">
