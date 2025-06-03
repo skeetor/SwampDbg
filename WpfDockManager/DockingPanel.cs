@@ -126,6 +126,8 @@ namespace WpfDockManager
 			Grid.SetRow(_centerTab, 0);
 			Grid.SetColumn(_centerTab, 0);
 			_centerChild = grid;
+			//_centerChild = _centerTab;
+			InternalChildren.Add( _centerChild );
 		}
 
 		private Grid CreateDefaultGrid()
