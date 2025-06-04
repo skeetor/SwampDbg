@@ -50,15 +50,18 @@
 		</StackPanel>
 
 		<WpfDockManagerNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
-			<Button Name="TestButtonLeft1" WpfDockManagerNS:DockingPanel.Dock="Left">MyButtonTextLeft1</Button>
-			<!--<Button Name="TestButtonLeft2" WpfDockManagerNS:DockingPanel.Dock="Left">MyButtonTextLeft2</Button>-->
-			<Button Name="TestButtonRight" WpfDockManagerNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
-			<!--
-            <Button Name="TestButtonTop" WpfDockManagerNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
-			<Button Name="TestButtonBottom" WpfDockManagerNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>
-			<Button Name="TestButtonCenter" WpfDockManagerNS:DockingPanel.Dock="Center">MyButtonTextCenter1</Button>
+			<!-- The first element doesn't need a dock position because the window is empty anyway and there nothing we can dock to.
+				If it is provided it is ignored.
 			-->
-			<Button Name="TestButtonCenter2" WpfDockManagerNS:DockingPanel.Dock="Center">MyButtonTextCenter2</Button>
+			<Button>MyButtonTextLeft1</Button>
+			<!--
+			<Button Name="TestButtonLeft2" WpfDockManagerNS:DockingPanel.Dock="Left">MyButtonTextLeft2</Button>
+			<Button WpfDockManagerNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
+			<Button WpfDockManagerNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
+			<Button WpfDockManagerNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>
+			<Button WpfDockManagerNS:DockingPanel.Dock="Center">MyButtonTextCenter1</Button>
+			<Button WpfDockManagerNS:DockingPanel.Dock="Center">MyButtonTextCenter2</Button>
+			-->
         </WpfDockManagerNS:DockingPanel>
 
 		<!-- <Custom:FileTreeControl Grid.Row="1" Grid.Column="0"/> -->
