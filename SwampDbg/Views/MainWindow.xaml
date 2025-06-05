@@ -54,7 +54,7 @@
 				If it is provided it is ignored.
 				TabHeader is the text that should appear on the tab item.
 			-->
-			<Button DMNS:DockingPanel.TabHeader="LeftButtonTabText">MyButtonTextLeft1</Button>
+			<Button Tag="LeftOf:Border" DMNS:DockingPanel.TabHeader="LeftButtonTabText">MyButtonTextLeft1</Button>
 			<!--
 			<Button Name="TestButtonLeft2" DMNS:DockingPanel.Dock="Left">MyButtonTextLeft2</Button>
 			<Button DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>

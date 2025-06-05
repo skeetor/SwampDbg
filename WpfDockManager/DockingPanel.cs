@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -102,25 +103,6 @@ namespace WpfDockManager
 			element.SetValue(DockProperty, value);
 		}
 		#endregion Dock property
-		#region GroupId property
-		public static readonly DependencyProperty GroupIdProperty =
-				DependencyProperty.RegisterAttached(
-						"GroupId",
-						typeof(string),
-						typeof(DockingPanel)
-					);
-		public static string GetGroupId(UIElement element)
-		{
-			ArgumentNullException.ThrowIfNull(element);
-			return (string)element.GetValue(GroupIdProperty);
-		}
-
-		public static void SetGroupId(UIElement element, string value)
-		{
-			ArgumentNullException.ThrowIfNull(element);
-			element.SetValue(GroupIdProperty, value);
-		}
-		#endregion GroupId property
 		#region TabHeader property
 		public static readonly DependencyProperty TabHeaderProperty =
 				DependencyProperty.RegisterAttached(
@@ -159,8 +141,15 @@ namespace WpfDockManager
 		public DockingPanel()
 			: base()
 		{
+			Loaded += OnLoadedEvent;
+
 			_rootChild = CreateDefaultGrid();
 			Children.Add(_rootChild);
+		}
+
+		private void OnLoadedEvent(object? sender, EventArgs e)
+		{
+			Debug.WriteLine("MyControl Loaded");
 		}
 
 		private Grid CreateDefaultGrid()
@@ -196,30 +185,6 @@ namespace WpfDockManager
 
 		protected override Size MeasureOverride(Size availableSize)
 		{
-			Size infiniteSize = new Size(double.PositiveInfinity, double.PositiveInfinity);
-
-			//	// Measure docked elements with infinite available size
-			//	_topChild?.Measure(infiniteSize);
-			//	_bottomChild?.Measure(infiniteSize);
-			//	_leftChild?.Measure(infiniteSize);
-			//	_rightChild?.Measure(infiniteSize);
-
-			//	// Calculate remaining space for the center element
-			//	double remainingWidth = availableSize.Width - (_leftChild?.DesiredSize.Width ?? 0) - (_rightChild?.DesiredSize.Width ?? 0);
-			//	double remainingHeight = availableSize.Height - (_topChild?.DesiredSize.Height ?? 0) - (_bottomChild?.DesiredSize.Height ?? 0);
-
-			//	Size centerAvailableSize = new Size(Math.Max(0, remainingWidth), Math.Max(0, remainingHeight));
-			//	_centerChild?.Measure(centerAvailableSize);
-
-			//	// Calculate the desired size of the CustomDockPanel
-			//	double desiredWidth = Math.Max(
-			//		(_leftChild?.DesiredSize.Width ?? 0) + (_rightChild?.DesiredSize.Width ?? 0) + (_centerChild?.DesiredSize.Width ?? 0),
-			//		Math.Max(_topChild?.DesiredSize.Width ?? 0, _bottomChild?.DesiredSize.Width ?? 0));
-
-			//	double desiredHeight = Math.Max(
-			//		(_topChild?.DesiredSize.Height ?? 0) + (_bottomChild?.DesiredSize.Height ?? 0) + (_centerChild?.DesiredSize.Height ?? 0),
-			//		Math.Max(_leftChild?.DesiredSize.Height ?? 0, _rightChild?.DesiredSize.Height ?? 0));
-
 			_rootChild.Measure(availableSize);
 
 			return _rootChild.DesiredSize;
@@ -227,25 +192,6 @@ namespace WpfDockManager
 
 		protected override Size ArrangeOverride(Size finalSize)
 		{
-			//double topHeight = _topChild?.DesiredSize.Height ?? 0;
-			//double bottomHeight = _bottomChild?.DesiredSize.Height ?? 0;
-			//double leftWidth = _leftChild?.DesiredSize.Width ?? 0;
-			//double rightWidth = _rightChild?.DesiredSize.Width ?? 0;
-
-			//// Arrange the docked elements
-			//_topChild?.Arrange(new Rect(0, 0, finalSize.Width, topHeight));
-			//_bottomChild?.Arrange(new Rect(0, finalSize.Height - bottomHeight, finalSize.Width, bottomHeight));
-			//_leftChild?.Arrange(new Rect(0, topHeight, leftWidth, finalSize.Height - topHeight - bottomHeight));
-			//_rightChild?.Arrange(new Rect(finalSize.Width - rightWidth, topHeight, rightWidth, finalSize.Height - topHeight - bottomHeight));
-
-			//// Arrange the center element
-			//double centerTop = topHeight;
-			//double centerLeft = leftWidth;
-			//double centerWidth = finalSize.Width - leftWidth - rightWidth;
-			//double centerHeight = finalSize.Height - topHeight - bottomHeight;
-
-			//_centerChild?.Arrange(new Rect(centerLeft, centerTop, centerWidth, centerHeight));
-
 			_rootChild.Arrange(new Rect(new Point(0, 0), finalSize));
 
 			return finalSize;
