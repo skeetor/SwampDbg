@@ -112,7 +112,7 @@ namespace WpfDockManager
 		public static string GetGroupId(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (string)element.GetValue(DockProperty);
+			return (string)element.GetValue(GroupIdProperty);
 		}
 
 		public static void SetGroupId(UIElement element, string value)
@@ -121,6 +121,40 @@ namespace WpfDockManager
 			element.SetValue(GroupIdProperty, value);
 		}
 		#endregion GroupId property
+		#region TabHeader property
+		public static readonly DependencyProperty TabHeaderProperty =
+				DependencyProperty.RegisterAttached(
+						"TabHeader",
+						typeof(string),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							"Default tab title",
+							new PropertyChangedCallback(OnTabHeaderChanged))
+					);
+		private static void OnTabHeaderChanged(DependencyObject child, DependencyPropertyChangedEventArgs e)
+		{
+			var el = child as FrameworkElement;
+			if (el == null)
+				return;
+
+			var ti = el.Parent as TabItem;
+			if (ti == null)
+				return;
+
+			ti.Header = e.NewValue;
+		}
+		public static string GetTabHeader(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (string)element.GetValue(TabHeaderProperty);
+		}
+
+		public static void SetTabHeader(UIElement element, string value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(TabHeaderProperty, value);
+		}
+		#endregion TabHeader property
 
 		public DockingPanel()
 			: base()
@@ -226,10 +260,6 @@ namespace WpfDockManager
 			if (visualAdded is UIElement elementAdded)
 			{
 				DockType dock = GetDock(elementAdded);
-				var c = Children[0] as Grid;
-				UIElement el;
-				if (c.Children.Count > 0)
-					el = c.Children[0];
 
 				switch (dock)
 				{
@@ -237,10 +267,19 @@ namespace WpfDockManager
 					case DockType.None:
 					{
 						RemoveElementFromItsParent(elementAdded as FrameworkElement);
-						_rootChild.Children.Add(elementAdded);
 
-						Grid.SetRow(elementAdded, 0);
-						Grid.SetColumn(elementAdded, 0);
+						string? header = GetTabHeader(elementAdded);
+
+						TabControl tc = new TabControl();
+						TabItem tcItem = new TabItem();
+						tcItem.Header = "DockingTabControlItem";
+						tcItem.Content = elementAdded;
+						tc.Items.Add(tcItem);
+
+						_rootChild.Children.Add(tc);
+
+						Grid.SetRow(tc, 0);
+						Grid.SetColumn(tc, 0);
 					}
 					break;
 				}
