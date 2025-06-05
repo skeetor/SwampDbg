@@ -52,17 +52,15 @@
         <DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
 			<!-- The first element doesn't need a dock position because the window is empty anyway and there is nothing we can dock to.
 				If it is provided it is ignored.
-				TabHeader is the text that should appear on the tab item.
+				DockTitle is the title that should appear on the tab item header.
 			-->
-			<Button Tag="LeftOf:Border" DMNS:DockingPanel.TabHeader="LeftButtonTabText">MyButtonTextLeft1</Button>
-			<!--
+			<Button DMNS:DockingPanel.DockTitle="LeftButtonTabText">MyButtonTextLeft1</Button>
 			<Button Name="TestButtonLeft2" DMNS:DockingPanel.Dock="Left">MyButtonTextLeft2</Button>
 			<Button DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
 			<Button DMNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
 			<Button DMNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>
-			<Button DMNS:DockingPanel.Dock="Center">MyButtonTextCenter1</Button>
-			<Button DMNS:DockingPanel.Dock="Center">MyButtonTextCenter2</Button>
-			-->
+			<Button>MyButtonTextCenter1</Button>
+			<Button>MyButtonTextCenter2</Button>
         </DMNS:DockingPanel>
 
 		<!-- <Custom:FileTreeControl Grid.Row="1" Grid.Column="0"/> -->

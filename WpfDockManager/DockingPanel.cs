@@ -1,7 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WpfDockManager.Layout;
 
 namespace WpfDockManager
 {
@@ -41,13 +43,18 @@ namespace WpfDockManager
 		Left,
 		Top,
 		Right,
-		Bottom,
-		Center
+		Bottom
 	}
 
 	public class DockingPanel : Panel
 	{
 		private Grid _rootChild;
+
+		// When the class is instantiated we have to remember all items added to it
+		// so we can create the layout when all items are fully loaded. Properties
+		// are added lazily, so we have to wait until an element has finished getting
+		// all properties.
+		private LayoutItemList? LayoutItems { get; set; }
 
 		#region Dock property
 		//public static readonly DependencyProperty DockProperty =
@@ -71,25 +78,24 @@ namespace WpfDockManager
 					|| dock == DockType.Top
 					|| dock == DockType.Right
 					|| dock == DockType.Bottom
-					|| dock == DockType.Center
 					|| dock == DockType.None
 					);
 		}
 		private static void OnDockChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
 		{
-			UIElement? child = depObj as UIElement;
-			if (child == null)
-				return;
+			//UIElement? child = depObj as UIElement;
+			//if (child == null)
+			//	return;
 
-			DockType dock = (DockType)e.OldValue;
-			if ((DockType)e.OldValue == DockType.None && (DockType)e.NewValue != DockType.None)
-			{
-				DockingPanel? p = VisualTreeHelper.GetParent(child) as DockingPanel;
-				if (p == null)
-					return;
+			//DockType dock = (DockType)e.OldValue;
+			//if ((DockType)e.OldValue == DockType.None && (DockType)e.NewValue != DockType.None)
+			//{
+			//	DockingPanel? p = VisualTreeHelper.GetParent(child) as DockingPanel;
+			//	if (p == null)
+			//		return;
 
-				p.Refresh(child);
-			}
+			//	p.Refresh(child);
+			//}
 		}
 		public static DockType GetDock(UIElement element)
 		{
@@ -103,17 +109,17 @@ namespace WpfDockManager
 			element.SetValue(DockProperty, value);
 		}
 		#endregion Dock property
-		#region TabHeader property
-		public static readonly DependencyProperty TabHeaderProperty =
+		#region DockTitle property
+		public static readonly DependencyProperty DockTitleProperty =
 				DependencyProperty.RegisterAttached(
-						"TabHeader",
+						"DockTitle",
 						typeof(string),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
 							"Default tab title",
-							new PropertyChangedCallback(OnTabHeaderChanged))
+							new PropertyChangedCallback(OnDockTitleChanged))
 					);
-		private static void OnTabHeaderChanged(DependencyObject child, DependencyPropertyChangedEventArgs e)
+		private static void OnDockTitleChanged(DependencyObject child, DependencyPropertyChangedEventArgs e)
 		{
 			var el = child as FrameworkElement;
 			if (el == null)
@@ -125,22 +131,23 @@ namespace WpfDockManager
 
 			ti.Header = e.NewValue;
 		}
-		public static string GetTabHeader(UIElement element)
+		public static string GetDockTitle(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (string)element.GetValue(TabHeaderProperty);
+			return (string)element.GetValue(DockTitleProperty);
 		}
 
-		public static void SetTabHeader(UIElement element, string value)
+		public static void SetDockTitle(UIElement element, string value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			element.SetValue(TabHeaderProperty, value);
+			element.SetValue(DockTitleProperty, value);
 		}
-		#endregion TabHeader property
+		#endregion DockTitle property
 
 		public DockingPanel()
 			: base()
 		{
+			LayoutItems = new LayoutItemList();
 			Loaded += OnLoadedEvent;
 
 			_rootChild = CreateDefaultGrid();
@@ -150,6 +157,8 @@ namespace WpfDockManager
 		private void OnLoadedEvent(object? sender, EventArgs e)
 		{
 			Debug.WriteLine("MyControl Loaded");
+
+			LayoutItems = null;
 		}
 
 		private Grid CreateDefaultGrid()
@@ -203,105 +212,88 @@ namespace WpfDockManager
 			if (visualAdded == _rootChild)
 				return;
 
-			if (visualAdded is UIElement elementAdded)
+			UIElement? child = visualAdded as UIElement;
+			if (child != null)
 			{
-				DockType dock = GetDock(elementAdded);
+				DockType dock = GetDock(child);
 
-				switch (dock)
+				// If an item has no Docktype yet, then the new item is a new instance and we have to remember it until the
+				// class is fully loaded with all properties set. If an element is added or removed during runtime, because
+				// the user dragged it in a new position, then the Dock property must be specified to know where it should
+				// be docked to.
+				if (dock == DockType.None)
 				{
-					case DockType.Center:
-					case DockType.None:
+					if (LayoutItems != null)
 					{
-						RemoveElementFromItsParent(elementAdded as FrameworkElement);
-
-						string? header = GetTabHeader(elementAdded);
-
-						TabControl tc = new TabControl();
-						TabItem tcItem = new TabItem();
-						tcItem.Header = "DockingTabControlItem";
-						tcItem.Content = elementAdded;
-						tc.Items.Add(tcItem);
-
-						_rootChild.Children.Add(tc);
-
-						Grid.SetRow(tc, 0);
-						Grid.SetColumn(tc, 0);
+						LayoutItems.Add(visualAdded);
+						return;
 					}
-					break;
+					else
+						throw new InvalidEnumArgumentException("DockType.None is an invalid argument after DockPanel is loaded.");
 				}
 
-				//	switch (dock)
-				//	{
-				//		case DockType.Top:
-				//			if (_topChild != null)
-				//			{
-				//				ReplaceChild(_rootChild, elementAdded);
-				//			}
-				//			else
-				//			{
-				//				_topChild = elementAdded;
-				//			}
-				//			break;
-				//		case DockType.Bottom:
-				//			if (_bottomChild != null)
-				//			{
-				//				ReplaceChild(_bottomChild, elementAdded);
-				//			}
-				//			else
-				//			{
-				//				_bottomChild = elementAdded;
-				//			}
-				//			break;
-				//		case DockType.Left:
-				//			if (_leftChild != null)
-				//			{
-				//				ReplaceChild(_leftChild, elementAdded);
-				//			}
-				//			else
-				//			{
-				//				_leftChild = elementAdded;
-				//			}
-				//			break;
-
-				//		case DockType.Right:
-				//			if (_rightChild != null)
-				//			{
-				//				ReplaceChild(_rightChild, elementAdded);
-				//			}
-				//			else
-				//			{
-				//				_rightChild = elementAdded;
-				//			}
-				//			break;
-
-				//		case DockType.None:
-				//			return;
-
-				//		default: // DockType.Center or anything else
-				//		{
-				//			RemoveElementFromItsParent(elementAdded as FrameworkElement);
-
-				//			TabItem ti = new TabItem();
-				//			ti.Header = "New Tab";
-				//			ti.Content = elementAdded;
-				//			_centerTab.Items.Add(ti);
-				//		}
-				//		break;
-				//	}
-
-				InvalidateMeasure();
+				DockElement(child);
 			}
 
-			if (visualRemoved is UIElement elementRemoved)
+			child = visualRemoved as UIElement;
+			if (child != null)
 			{
-				//	if (elementRemoved == _topChild) _topChild = null;
-				//	if (elementRemoved == _bottomChild) _bottomChild = null;
-				//	if (elementRemoved == _leftChild) _leftChild = null;
-				//	if (elementRemoved == _rightChild) _rightChild = null;
+				if (LayoutItems != null)
+				{
+					LayoutItems.Remove(visualRemoved);
+					return;
+				}
 
-				//	InvalidateMeasure();
+				UndockElement(child);
 			}
+
+			//if (visualAdded is UIElement elementAdded)
+			//{
+			//	DockType dock = GetDock(elementAdded);
+
+			//	switch (dock)
+			//	{
+			//		case DockType.Center:
+			//		{
+			//			RemoveElementFromItsParent(elementAdded as FrameworkElement);
+
+			//			string? header = GetDockTitle(elementAdded);
+
+			//			TabControl tc = new TabControl();
+			//			TabItem tcItem = new TabItem();
+			//			tcItem.Header = "DockingTabControlItem";
+			//			tcItem.Content = elementAdded;
+			//			tc.Items.Add(tcItem);
+
+			//			_rootChild.Children.Add(tc);
+
+			//			Grid.SetRow(tc, 0);
+			//			Grid.SetColumn(tc, 0);
+			//		}
+			//		break;
+			//	}
+
+			//	InvalidateMeasure();
+			//}
 		}
+
+		#region Docking
+		protected void DockElement(UIElement? element)
+		{
+			if (element == null)
+				return;
+
+			InvalidateMeasure();
+		}
+		protected void UndockElement(UIElement? element)
+		{
+			if (element == null)
+				return;
+
+			InvalidateMeasure();
+		}
+		#endregion Docking
+
 		public static void RemoveElementFromItsParent(FrameworkElement? el)
 		{
 			if (el == null)
