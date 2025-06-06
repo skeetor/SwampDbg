@@ -15,6 +15,8 @@ namespace WpfDockManager.Layout
 	{
 		private List<LayoutItem> _items = new List<LayoutItem>();
 
+		public int Count { get { return _items.Count; } }
+
 		public LayoutItem? Find(DependencyObject? element)
 		{
 			if (element == null)
@@ -48,6 +50,10 @@ namespace WpfDockManager.Layout
 		{
 			get { return Find(element); }
 			set { Add(element); }
+		}
+		public LayoutItem? this[int index]
+		{
+			get { return _items[index]; }
 		}
 
 		public void Remove(DependencyObject? element)

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -188,6 +187,28 @@ namespace WpfDockManager
 			element.SetValue(DockNameProperty, value);
 		}
 		#endregion DockName property
+		#region DockIndex property
+		public static readonly DependencyProperty DockIndexProperty =
+				DependencyProperty.RegisterAttached(
+						"DockIndex",
+						typeof(int),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							-1
+							)
+					);
+		public static int GetDockIndex(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (int)element.GetValue(DockIndexProperty);
+		}
+
+		public static void SetDockIndex(UIElement element, int value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(DockIndexProperty, value);
+		}
+		#endregion DockIndex property
 
 		public DockingPanel()
 			: base()
@@ -204,8 +225,11 @@ namespace WpfDockManager
 			if (LayoutItems == null)
 				return;
 
-			foreach (var item in LayoutItems!)
+			for (int i = 0; i < LayoutItems.Count; i++)
+			{
+				var item = LayoutItems[i]!;
 				InitLayout(item.Object as UIElement);
+			}
 
 			LayoutItems = null;
 		}
@@ -325,7 +349,7 @@ namespace WpfDockManager
 		}
 
 		#region Un-/Docking of elements
-		protected UIElement? FindTarget(string targetName)
+		private UIElement? FindTarget(string targetName)
 		{
 			if (targetName.Length == 0)
 				return null;
@@ -361,20 +385,121 @@ namespace WpfDockManager
 			}
 
 			var dock = GetDock(element);
+			int index = GetDockIndex(element);
 
-			element.ClearValue(DockProperty);
-			element.ClearValue(DockTargetProperty);
+			// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
+			//ResetProperties(element);
 
 			DockElement(element, dock, target);
 		}
-		protected void DockElement(UIElement element, DockType dock, UIElement? target = null)
+		private void ResetProperties(UIElement? element)
+		{
+			if (element == null)
+				return;
+
+			element.ClearValue(DockProperty);
+			element.ClearValue(DockTargetProperty);
+			element.ClearValue(DockIndexProperty);
+		}
+		/// <summary>
+		/// Recursively finds the specified parent in a control hierarchy
+		/// </summary>
+		/// <typeparam name="T">The type of the targeted Find</typeparam>
+		/// <param name="child">The child control to start with</param>
+		/// <returns></returns>
+		private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
+		{
+			if (child == null)
+				return null;
+
+			T? foundParent = null;
+			var currentParent = VisualTreeHelper.GetParent(child);
+
+			do
+			{
+				var frameworkElement = currentParent as FrameworkElement;
+				if (frameworkElement is T)
+				{
+					foundParent = (T)currentParent;
+					break;
+				}
+
+				currentParent = VisualTreeHelper.GetParent(currentParent);
+
+			} while (currentParent != null);
+
+			return foundParent;
+		}
+		/// <summary>
+		/// Wrap a GUI item in a tabcontrol. If the tabcontrol doesn't exist it will be created.
+		/// If index is not specified, it will be appended at the end.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
+		public TabControl WrapElement(FrameworkElement element, TabControl? tabCtrl = null, int index = -1, string? title = "")
+		{
+			RemoveElementFromItsParent(element);
+
+			if (tabCtrl == null)
+				tabCtrl = new TabControl();
+
+			if (title == null)
+				title = "";
+
+			TabItem ti = new TabItem();
+			ti.Header = title;
+			ti.Content = element;
+			if (index == -1)
+			{
+				var c = tabCtrl.Items.Count;
+				if (c > 0)
+					index = c - 1;
+				else
+					index = 0;
+			}
+			tabCtrl.Items.Insert(index, ti);
+
+			return tabCtrl;
+		}
+		public void DockElement(UIElement element, DockType dock, UIElement? target = null, int index = -1)
 		{
 			if (element == target)
 				throw new InvalidOperationException("Can not dock an element on itself!");
 
+			var title = GetDockTitle(element);
+			var item = element as FrameworkElement;
+			if (item == null)
+				throw new InvalidOperationException("Item is not a FrameworkItem");
+
+			var parent = FindParent<DockingPanel>(element);
+			if (parent == null)
+				throw new InvalidOperationException("Item is not connected to a DockingPanel");
+
+			// The first item is always in the center as there are no objects we could split.
+			if (_rootChild.Children.Count == 0)
+				dock = DockType.None;
+
+			switch (dock)
+			{
+				case DockType.None:
+				{
+					// If we already have children, we need to know where to put the item
+					// for a center object. If no dock position is specified, the current
+					// item can only be added to an existing TabControl. Only if the window
+					// is empty, we put it as the first item.
+					if (_rootChild.Children.Count != 0 && target == null)
+						throw new InvalidOperationException("Item can not be added without a target");
+
+					var tabCtrl = WrapElement(item, title: title);
+					_rootChild.Children.Add(tabCtrl);
+					Grid.SetRow(tabCtrl, 0);
+					Grid.SetColumn(tabCtrl, 0);
+				}
+				break;
+			}
+
 			InvalidateMeasure();
 		}
-
 		protected void UndockElement(UIElement? element)
 		{
 			if (element == null)
