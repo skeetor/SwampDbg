@@ -1,4 +1,7 @@
 ﻿
+using System.CodeDom;
+using System.Collections;
+using System.Configuration;
 using System.Windows;
 
 namespace WpfDockManager.Layout
@@ -8,7 +11,7 @@ namespace WpfDockManager.Layout
 		public DependencyObject Object { get; set; } = null!;
 	}
 
-	public class LayoutItemList
+	public class LayoutItemList : IEnumerable<LayoutItem>
 	{
 		private List<LayoutItem> _items = new List<LayoutItem>();
 
@@ -26,16 +29,25 @@ namespace WpfDockManager.Layout
 			return null;
 		}
 
-		public void Add(DependencyObject? element)
+		public LayoutItem? Add(DependencyObject? element)
 		{
 			LayoutItem? layoutItem = Find(element);
 			if (layoutItem != null)
-				return;
+				return null;
 
-			_items.Add(new LayoutItem()
+			var li = new LayoutItem()
 			{
 				Object = element!
-			});
+			};
+
+			_items.Add(li);
+			return li;
+		}
+
+		public LayoutItem? this[DependencyObject? element]
+		{
+			get { return Find(element); }
+			set { Add(element); }
 		}
 
 		public void Remove(DependencyObject? element)
@@ -47,5 +59,25 @@ namespace WpfDockManager.Layout
 			_items.Remove(layoutItem!);
 		}
 
+		public static LayoutItemList operator +(LayoutItemList list, DependencyObject? element)
+		{
+			list.Add(element);
+			return list;
+		}
+		public static LayoutItemList operator -(LayoutItemList list, DependencyObject? element)
+		{
+			list.Remove(element);
+			return list;
+		}
+
+		public IEnumerator<LayoutItem> GetEnumerator()
+		{
+			return _items.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
 	}
 }

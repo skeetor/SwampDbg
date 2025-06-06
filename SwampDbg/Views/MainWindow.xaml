@@ -53,9 +53,12 @@
 			<!-- The first element doesn't need a dock position because the window is empty anyway and there is nothing we can dock to.
 				If it is provided it is ignored.
 				DockTitle is the title that should appear on the tab item header.
+				Group serves as an anchor where a new item can be included and is referenced by Target.
+				Target specifies where a new item should be docked to. I.E Target="MyWindowGroup" Dock="Left"
+					will place the new item left of "MyWindowGroup"
 			-->
-			<Button DMNS:DockingPanel.DockTitle="LeftButtonTabText">MyButtonTextLeft1</Button>
-			<Button Name="TestButtonLeft2" DMNS:DockingPanel.Dock="Left">MyButtonTextLeft2</Button>
+			<Button DMNS:DockingPanel.DockName="BrowserGroup" DMNS:DockingPanel.DockTitle="LeftButtonTabText">MyButtonTextLeft1</Button>
+            <Button DMNS:DockingPanel.DockTarget="BrowserGroup" DMNS:DockingPanel.Dock="Left">MyButtonTextLeft2</Button>
 			<Button DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
 			<Button DMNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
 			<Button DMNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>

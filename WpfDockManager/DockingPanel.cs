@@ -143,6 +143,51 @@ namespace WpfDockManager
 			element.SetValue(DockTitleProperty, value);
 		}
 		#endregion DockTitle property
+		#region DockTarget property
+		public static readonly DependencyProperty DockTargetProperty =
+				DependencyProperty.RegisterAttached(
+						"DockTarget",
+						typeof(string),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							""
+							)
+						// We cant validate the targt name here, so we have to do this after the control is loaded.
+					);
+		public static string GetDockTarget(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (string)element.GetValue(DockTargetProperty);
+		}
+
+		public static void SetDockTarget(UIElement element, string value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(DockTargetProperty, value);
+		}
+		#endregion DockTarget property
+		#region DockName property
+		public static readonly DependencyProperty DockNameProperty =
+				DependencyProperty.RegisterAttached(
+						"DockName",
+						typeof(string),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							""
+							)
+					);
+		public static string GetDockName(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (string)element.GetValue(DockNameProperty);
+		}
+
+		public static void SetDockName(UIElement element, string value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(DockNameProperty, value);
+		}
+		#endregion DockName property
 
 		public DockingPanel()
 			: base()
@@ -156,7 +201,11 @@ namespace WpfDockManager
 
 		private void OnLoadedEvent(object? sender, EventArgs e)
 		{
-			Debug.WriteLine("MyControl Loaded");
+			if (LayoutItems == null)
+				return;
+
+			foreach (var item in LayoutItems!)
+				InitLayout(item.Object as UIElement);
 
 			LayoutItems = null;
 		}
@@ -225,14 +274,13 @@ namespace WpfDockManager
 				{
 					if (LayoutItems != null)
 					{
-						LayoutItems.Add(visualAdded);
+						LayoutItems += visualAdded;
 						return;
 					}
 					else
 						throw new InvalidEnumArgumentException("DockType.None is an invalid argument after DockPanel is loaded.");
 				}
-
-				DockElement(child);
+				//DockElement(child);
 			}
 
 			child = visualRemoved as UIElement;
@@ -240,11 +288,10 @@ namespace WpfDockManager
 			{
 				if (LayoutItems != null)
 				{
-					LayoutItems.Remove(visualRemoved);
+					LayoutItems -= visualRemoved;
 					return;
 				}
-
-				UndockElement(child);
+				//UndockElement(child);
 			}
 
 			//if (visualAdded is UIElement elementAdded)
@@ -277,14 +324,57 @@ namespace WpfDockManager
 			//}
 		}
 
-		#region Docking
-		protected void DockElement(UIElement? element)
+		#region Un-/Docking of elements
+		protected UIElement? FindTarget(string targetName)
 		{
+			if (targetName.Length == 0)
+				return null;
+
+			foreach (var item in LayoutItems!)
+			{
+				var element = item.Object as UIElement;
+				var nm = GetDockName(element!);
+				if (nm != null && nm == targetName)
+					return element;
+			}
+
+			return null;
+		}
+		protected void InitLayout(UIElement? element)
+		{
+			// LayoutItems exists only during initialization and this function should not be called once
+			// everything is set up. Use the DockElement instead.
+			if (LayoutItems == null)
+				throw new InvalidOperationException("LayoutItems is null");
+
 			if (element == null)
 				return;
 
+			UIElement? target = null;
+
+			var targetName = GetDockTarget(element);
+			if (targetName != null && targetName.Length > 0)
+			{
+				target = FindTarget(targetName);
+				if (target == null)
+					throw new InvalidOperationException("Target '" + targetName + "' must be defined.");
+			}
+
+			var dock = GetDock(element);
+
+			element.ClearValue(DockProperty);
+			element.ClearValue(DockTargetProperty);
+
+			DockElement(element, dock, target);
+		}
+		protected void DockElement(UIElement element, DockType dock, UIElement? target = null)
+		{
+			if (element == target)
+				throw new InvalidOperationException("Can not dock an element on itself!");
+
 			InvalidateMeasure();
 		}
+
 		protected void UndockElement(UIElement? element)
 		{
 			if (element == null)
@@ -292,7 +382,7 @@ namespace WpfDockManager
 
 			InvalidateMeasure();
 		}
-		#endregion Docking
+		#endregion Un-/Docking of elements
 
 		public static void RemoveElementFromItsParent(FrameworkElement? el)
 		{
