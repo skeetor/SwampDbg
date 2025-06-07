@@ -401,35 +401,7 @@ namespace WpfDockManager
 			element.ClearValue(DockTargetProperty);
 			element.ClearValue(DockIndexProperty);
 		}
-		/// <summary>
-		/// Recursively finds the specified parent in a control hierarchy
-		/// </summary>
-		/// <typeparam name="T">The type of the targeted Find</typeparam>
-		/// <param name="child">The child control to start with</param>
-		/// <returns></returns>
-		private static T? FindParent<T>(DependencyObject child) where T : DependencyObject
-		{
-			if (child == null)
-				return null;
 
-			T? foundParent = null;
-			var currentParent = VisualTreeHelper.GetParent(child);
-
-			do
-			{
-				var frameworkElement = currentParent as FrameworkElement;
-				if (frameworkElement is T)
-				{
-					foundParent = (T)currentParent;
-					break;
-				}
-
-				currentParent = VisualTreeHelper.GetParent(currentParent);
-
-			} while (currentParent != null);
-
-			return foundParent;
-		}
 		/// <summary>
 		/// Wrap a GUI item in a tabcontrol. If the tabcontrol doesn't exist it will be created.
 		/// If index is not specified, it will be appended at the end.
@@ -438,7 +410,7 @@ namespace WpfDockManager
 		/// <returns></returns>
 		public TabControl WrapElement(FrameworkElement element, TabControl? tabCtrl = null, int index = -1, string? title = "")
 		{
-			RemoveElementFromItsParent(element);
+			DockingHelper.RemoveElementFromItsParent(element);
 
 			if (tabCtrl == null)
 				tabCtrl = new TabControl();
@@ -471,7 +443,7 @@ namespace WpfDockManager
 			if (item == null)
 				throw new InvalidOperationException("Item is not a FrameworkItem");
 
-			var parent = FindParent<DockingPanel>(element);
+			var parent = DockingHelper.FindParentClass<DockingPanel>(element);
 			if (parent == null)
 				throw new InvalidOperationException("Item is not connected to a DockingPanel");
 
