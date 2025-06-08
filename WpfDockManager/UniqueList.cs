@@ -53,18 +53,6 @@ namespace WpfDockManager
 			return -1;
 		}
 
-		public T? Add(T? element)
-		{
-			if (element == null)
-				return default(T);
-
-			var index = IndexOf(element);
-			if (index >= 0)
-				return _items[index];
-
-			return default(T);
-		}
-
 		public T? this[T? element]
 		{
 			get { return Find(element); }
@@ -74,6 +62,19 @@ namespace WpfDockManager
 		public T? this[int index]
 		{
 			get { return _items[index]; }
+		}
+
+		public T? Add(T? element)
+		{
+			if (element == null)
+				return default(T);
+
+			var index = IndexOf(element);
+			if (index >= 0)
+				return _items[index];
+
+			_items.Add(element);
+			return element;
 		}
 
 		public void Remove(T? element)
