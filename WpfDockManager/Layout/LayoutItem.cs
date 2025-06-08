@@ -1,89 +1,39 @@
 ﻿
-using System.CodeDom;
-using System.Collections;
-using System.Configuration;
 using System.Windows;
 
 namespace WpfDockManager.Layout
 {
-	public class LayoutItem
+	public class LayoutItem : ITypeConverter<LayoutItem, DependencyObject>
 	{
 		public DependencyObject Object { get; set; } = null!;
-	}
 
-	public class LayoutItemList : IEnumerable<LayoutItem>
-	{
-		private List<LayoutItem> _items = new List<LayoutItem>();
-
-		public int Count { get { return _items.Count; } }
-
-		public LayoutItem? Find(DependencyObject? element)
+		public LayoutItem()
 		{
-			if (element == null)
+		}
+
+		public LayoutItem(DependencyObject element)
+		{
+			Object = element;
+		}
+
+		public static implicit operator DependencyObject(LayoutItem li) => li.Object;
+		public static explicit operator LayoutItem(DependencyObject element) => new LayoutItem(element);
+
+		public LayoutItem? Convert(DependencyObject? value)
+		{
+			if (value == null)
 				return null;
 
-			foreach (var item in _items)
-			{
-				if (item.Object == element)
-					return item;
-			}
-
-			return null;
+			this.Object = value;
+			return this;
 		}
 
-		public LayoutItem? Add(DependencyObject? element)
+		public DependencyObject? Convert(LayoutItem? value)
 		{
-			LayoutItem? layoutItem = Find(element);
-			if (layoutItem != null)
+			if (value == null)
 				return null;
 
-			var li = new LayoutItem()
-			{
-				Object = element!
-			};
-
-			_items.Add(li);
-			return li;
-		}
-
-		public LayoutItem? this[DependencyObject? element]
-		{
-			get { return Find(element); }
-			set { Add(element); }
-		}
-		public LayoutItem? this[int index]
-		{
-			get { return _items[index]; }
-		}
-
-		public void Remove(DependencyObject? element)
-		{
-			LayoutItem? layoutItem = Find(element);
-			if (layoutItem == null)
-				return;
-
-			_items.Remove(layoutItem!);
-		}
-
-		public static LayoutItemList operator +(LayoutItemList list, DependencyObject? element)
-		{
-			list.Add(element);
-			return list;
-		}
-		public static LayoutItemList operator -(LayoutItemList list, DependencyObject? element)
-		{
-			list.Remove(element);
-			return list;
-		}
-
-		public IEnumerator<LayoutItem> GetEnumerator()
-		{
-			return _items.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
+			return value.Object;
 		}
 	}
 }

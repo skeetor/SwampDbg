@@ -1,8 +1,6 @@
-﻿using System.ComponentModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using WpfDockManager.Layout;
+using LayoutItemList = WpfDockManager.UniqueList<WpfDockManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
 namespace WpfDockManager
 {
@@ -48,6 +46,7 @@ namespace WpfDockManager
 	public class DockingPanel : Panel
 	{
 		private Grid _rootChild;
+		private Dictionary<string, UIElement> Targets = new Dictionary<string, UIElement>();
 
 		// When the class is instantiated we have to remember all items added to it
 		// so we can create the layout when all items are fully loaded. Properties
@@ -142,51 +141,27 @@ namespace WpfDockManager
 			element.SetValue(DockTitleProperty, value);
 		}
 		#endregion DockTitle property
-		#region DockTarget property
-		public static readonly DependencyProperty DockTargetProperty =
+		#region DockGroup property
+		public static readonly DependencyProperty DockGroupProperty =
 				DependencyProperty.RegisterAttached(
-						"DockTarget",
+						"DockGroup",
 						typeof(string),
 						typeof(DockingPanel),
-						new FrameworkPropertyMetadata(
-							""
-							)
-						// We cant validate the targt name here, so we have to do this after the control is loaded.
+						new FrameworkPropertyMetadata("")
 					);
-		public static string GetDockTarget(UIElement element)
+
+		public static string GetDockGroup(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (string)element.GetValue(DockTargetProperty);
+			return (string)element.GetValue(DockGroupProperty);
 		}
 
-		public static void SetDockTarget(UIElement element, string value)
+		public static void SetDockGroup(UIElement element, string value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			element.SetValue(DockTargetProperty, value);
+			element.SetValue(DockGroupProperty, value);
 		}
-		#endregion DockTarget property
-		#region DockName property
-		public static readonly DependencyProperty DockNameProperty =
-				DependencyProperty.RegisterAttached(
-						"DockName",
-						typeof(string),
-						typeof(DockingPanel),
-						new FrameworkPropertyMetadata(
-							""
-							)
-					);
-		public static string GetDockName(UIElement element)
-		{
-			ArgumentNullException.ThrowIfNull(element);
-			return (string)element.GetValue(DockNameProperty);
-		}
-
-		public static void SetDockName(UIElement element, string value)
-		{
-			ArgumentNullException.ThrowIfNull(element);
-			element.SetValue(DockNameProperty, value);
-		}
-		#endregion DockName property
+		#endregion DockGroup property
 		#region DockIndex property
 		public static readonly DependencyProperty DockIndexProperty =
 				DependencyProperty.RegisterAttached(
@@ -225,11 +200,7 @@ namespace WpfDockManager
 			if (LayoutItems == null)
 				return;
 
-			for (int i = 0; i < LayoutItems.Count; i++)
-			{
-				var item = LayoutItems[i]!;
-				InitLayout(item.Object as UIElement);
-			}
+			InitLayout(LayoutItems);
 
 			LayoutItems = null;
 		}
@@ -302,7 +273,7 @@ namespace WpfDockManager
 						return;
 					}
 					else
-						throw new InvalidEnumArgumentException("DockType.None is an invalid argument after DockPanel is loaded.");
+						throw new ArgumentException("DockType.None is an invalid argument after DockPanel is loaded.");
 				}
 				//DockElement(child);
 			}
@@ -317,80 +288,75 @@ namespace WpfDockManager
 				}
 				//UndockElement(child);
 			}
-
-			//if (visualAdded is UIElement elementAdded)
-			//{
-			//	DockType dock = GetDock(elementAdded);
-
-			//	switch (dock)
-			//	{
-			//		case DockType.Center:
-			//		{
-			//			RemoveElementFromItsParent(elementAdded as FrameworkElement);
-
-			//			string? header = GetDockTitle(elementAdded);
-
-			//			TabControl tc = new TabControl();
-			//			TabItem tcItem = new TabItem();
-			//			tcItem.Header = "DockingTabControlItem";
-			//			tcItem.Content = elementAdded;
-			//			tc.Items.Add(tcItem);
-
-			//			_rootChild.Children.Add(tc);
-
-			//			Grid.SetRow(tc, 0);
-			//			Grid.SetColumn(tc, 0);
-			//		}
-			//		break;
-			//	}
-
-			//	InvalidateMeasure();
-			//}
+			//InvalidateMeasure();
 		}
 
 		#region Un-/Docking of elements
-		private UIElement? FindTarget(string targetName)
+		private UIElement? FindGroup(string group)
 		{
-			if (targetName.Length == 0)
+			if (group.Length == 0)
 				return null;
 
 			foreach (var item in LayoutItems!)
 			{
 				var element = item.Object as UIElement;
-				var nm = GetDockName(element!);
-				if (nm != null && nm == targetName)
+				var nm = GetDockGroup(element!);
+				if (nm != null && nm == group)
 					return element;
 			}
 
 			return null;
 		}
-		protected void InitLayout(UIElement? element)
+
+		/// <summary>
+		/// Build the layout for the specified objects in the list. The items
+		/// are removed from the list, so when this function returns, the list
+		/// will be empty.
+		/// </summary>
+		/// <param name="items"></param>
+		/// <exception cref="InvalidOperationException"></exception>
+		protected void InitLayout(LayoutItemList items)
 		{
 			// LayoutItems exists only during initialization and this function should not be called once
 			// everything is set up. Use the DockElement instead.
-			if (LayoutItems == null)
-				throw new InvalidOperationException("LayoutItems is null");
-
-			if (element == null)
+			if (items == null)
 				return;
 
-			UIElement? target = null;
-
-			var targetName = GetDockTarget(element);
-			if (targetName != null && targetName.Length > 0)
+			var counter = 0;
+			while (items.Count > 0)
 			{
-				target = FindTarget(targetName);
-				if (target == null)
-					throw new InvalidOperationException("Target '" + targetName + "' must be defined.");
+				if (counter > items.Count)
+					throw new InvalidOperationException("Endless loop detected");
+
+				// Just make sure we don't have an endless loop if an item can not be
+				// docked and will stay in the list forever.
+				counter++;
+
+				var element = items[0]!.Object as UIElement;
+				if (element == null)
+				{
+					items.RemoveAt(0);
+					continue;
+				}
+
+				UIElement? target = null;
+
+				var group = GetDockGroup(element);
+				if (group != null && group.Length > 0)
+				{
+					target = FindGroup(group);
+					if (target == null)
+						throw new InvalidOperationException("Target '" + group + "' must be defined.");
+				}
+
+				var dock = GetDock(element);
+				int index = GetDockIndex(element);
+
+				// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
+				//ResetProperties(element);
+
+				DockElement(element, dock, target);
 			}
-
-			var dock = GetDock(element);
-			int index = GetDockIndex(element);
-
-			// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
-			//ResetProperties(element);
-
-			DockElement(element, dock, target);
 		}
 		private void ResetProperties(UIElement? element)
 		{
@@ -398,7 +364,7 @@ namespace WpfDockManager
 				return;
 
 			element.ClearValue(DockProperty);
-			element.ClearValue(DockTargetProperty);
+			element.ClearValue(DockGroupProperty);
 			element.ClearValue(DockIndexProperty);
 		}
 
@@ -436,16 +402,16 @@ namespace WpfDockManager
 		public void DockElement(UIElement element, DockType dock, UIElement? target = null, int index = -1)
 		{
 			if (element == target)
-				throw new InvalidOperationException("Can not dock an element on itself!");
+				throw new ArgumentException("Can not dock an element on itself!");
 
 			var title = GetDockTitle(element);
 			var item = element as FrameworkElement;
 			if (item == null)
-				throw new InvalidOperationException("Item is not a FrameworkItem");
+				throw new ArgumentException("Item is not a FrameworkItem");
 
-			var parent = DockingHelper.FindParentClass<DockingPanel>(element);
-			if (parent == null)
-				throw new InvalidOperationException("Item is not connected to a DockingPanel");
+			//var parent = DockingHelper.FindParentClass<DockingPanel>(element);
+			//if (parent == null)
+			//	throw new ArgumentException("Item is not connected to a DockingPanel");
 
 			// The first item is always in the center as there are no objects we could split.
 			if (_rootChild.Children.Count == 0)
