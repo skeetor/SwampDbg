@@ -53,12 +53,15 @@
 			<!-- The first element doesn't need a dock position because the window is empty anyway and there is nothing we can dock to.
 				If it is provided it is ignored.
 				DockTitle is the title that should appear on the tab item header.
-				DockGroup: All items with the same group name will be added to the same TabControl.
+				DockAnchor: All items with the same name will be added to the same TabControl.
+					If no DockAnchor is specified the item is added to the root. The TabControl which contains
+					a named item will have a DockAnchor property set with "<name>Anchor" so it can serve as a
+					target as well.
 			-->
 			<Button DMNS:DockingPanel.DockTitle="LeftButtonTabText1">MyButtonTextLeft1</Button>
 			<Button DMNS:DockingPanel.DockTitle="SecondLeftButton2">MyButtonTextLeft2</Button>
 			<!--
-			<Button DMNS:DockingPanel.DockGroup="PropertyGroup" DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
+			<Button DMNS:DockingPanel.DockAnchor="PropertyGroup" DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
 			<Button DMNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
 			<Button DMNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>
 			<Button DMNS:DockingPanel.DockName="DocumentGroup">MyButtonTextCenter1</Button>
