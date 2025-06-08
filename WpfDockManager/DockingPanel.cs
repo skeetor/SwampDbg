@@ -45,14 +45,14 @@ namespace WpfDockManager
 
 	public class DockingPanel : Panel
 	{
-		private Grid _rootChild;
-		private Dictionary<string, UIElement> Targets = new Dictionary<string, UIElement>();
+		private Grid _rootGrid;
 
 		// When the class is instantiated we have to remember all items added to it
 		// so we can create the layout when all items are fully loaded. Properties
 		// are added lazily, so we have to wait until an element has finished getting
 		// all properties.
 		private LayoutItemList? LayoutItems { get; set; }
+		private Dictionary<string, TabControl> DockGroups = new Dictionary<string, TabControl>();
 
 		#region Dock property
 		//public static readonly DependencyProperty DockProperty =
@@ -65,7 +65,8 @@ namespace WpfDockManager
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
 							DockType.None,
-							new PropertyChangedCallback(OnDockChanged)),
+							new PropertyChangedCallback(OnDockChanged)
+						),
 						new ValidateValueCallback(IsValidDock)
 				);
 		internal static bool IsValidDock(object o)
@@ -79,6 +80,7 @@ namespace WpfDockManager
 					|| dock == DockType.None
 					);
 		}
+
 		private static void OnDockChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
 		{
 			//UIElement? child = depObj as UIElement;
@@ -95,6 +97,7 @@ namespace WpfDockManager
 			//	p.Refresh(child);
 			//}
 		}
+
 		public static DockType GetDock(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
@@ -147,8 +150,42 @@ namespace WpfDockManager
 						"DockGroup",
 						typeof(string),
 						typeof(DockingPanel),
-						new FrameworkPropertyMetadata("")
+						new FrameworkPropertyMetadata(
+							"",
+							new PropertyChangedCallback(OnDockGroupChanged)
+						)
 					);
+
+		private static void OnDockGroupChanged(DependencyObject child, DependencyPropertyChangedEventArgs e)
+		{
+			var parent = DockingHelper.FindParentClass<DockingPanel>(child);
+			if (parent == null)
+				return;
+
+			var newGroup = (e.NewValue as string)!;
+			var tabCtrl = parent.FindGroup(newGroup);
+
+			// If we already have a tab for this group we don't need to do anything.
+			if (tabCtrl == null)
+			{
+				if (newGroup.Length > 0)
+				{
+					tabCtrl = new TabControl();
+					parent.DockGroups[newGroup] = tabCtrl;
+					SetDockGroup(tabCtrl, newGroup);
+				}
+			}
+
+			var oldGroup = (e.OldValue as string)!;
+			if (oldGroup.Length == 0)
+				return;
+
+			tabCtrl = parent.FindGroup(oldGroup);
+			if (tabCtrl == null)
+				return;
+
+			parent.DockGroups.Remove(oldGroup);
+		}
 
 		public static string GetDockGroup(UIElement element)
 		{
@@ -191,8 +228,8 @@ namespace WpfDockManager
 			LayoutItems = new LayoutItemList();
 			Loaded += OnLoadedEvent;
 
-			_rootChild = CreateDefaultGrid();
-			Children.Add(_rootChild);
+			_rootGrid = CreateDefaultGrid();
+			Children.Add(_rootGrid);
 		}
 
 		private void OnLoadedEvent(object? sender, EventArgs e)
@@ -202,7 +239,11 @@ namespace WpfDockManager
 
 			InitLayout(LayoutItems);
 
+			// These items are only used during initialization. Once this is done
+			// We can no longer rely on the references anyway, as they might have been
+			// destroyed or moved, so we discard them.
 			LayoutItems = null;
+			DockGroups = new ();
 		}
 
 		private Grid CreateDefaultGrid()
@@ -238,14 +279,14 @@ namespace WpfDockManager
 
 		protected override Size MeasureOverride(Size availableSize)
 		{
-			_rootChild.Measure(availableSize);
+			_rootGrid.Measure(availableSize);
 
-			return _rootChild.DesiredSize;
+			return _rootGrid.DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Size finalSize)
 		{
-			_rootChild.Arrange(new Rect(new Point(0, 0), finalSize));
+			_rootGrid.Arrange(new Rect(new Point(0, 0), finalSize));
 
 			return finalSize;
 		}
@@ -253,7 +294,7 @@ namespace WpfDockManager
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
 			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
-			if (visualAdded == _rootChild)
+			if (LayoutItems == null || visualAdded == _rootGrid)
 				return;
 
 			UIElement? child = visualAdded as UIElement;
@@ -267,13 +308,8 @@ namespace WpfDockManager
 				// be docked to.
 				if (dock == DockType.None)
 				{
-					if (LayoutItems != null)
-					{
-						LayoutItems += visualAdded;
-						return;
-					}
-					else
-						throw new ArgumentException("DockType.None is an invalid argument after DockPanel is loaded.");
+					LayoutItems += visualAdded;
+					return;
 				}
 				//DockElement(child);
 			}
@@ -281,28 +317,35 @@ namespace WpfDockManager
 			child = visualRemoved as UIElement;
 			if (child != null)
 			{
-				if (LayoutItems != null)
-				{
-					LayoutItems -= visualRemoved;
-					return;
-				}
+				LayoutItems -= visualRemoved;
+				return;
 				//UndockElement(child);
 			}
 			//InvalidateMeasure();
 		}
 
-		#region Un-/Docking of elements
-		private UIElement? FindGroup(string group)
+		private void ResetProperties(UIElement? element)
 		{
-			if (group.Length == 0)
+			if (element == null)
+				return;
+
+			element.ClearValue(DockProperty);
+			element.ClearValue(DockGroupProperty);
+			element.ClearValue(DockIndexProperty);
+		}
+
+		#region Un-/Docking of elements
+		private TabControl? FindGroup(string? group)
+		{
+			if (group == null || group.Length == 0)
 				return null;
 
-			foreach (var item in LayoutItems!)
+			try
 			{
-				var element = item.Object as UIElement;
-				var nm = GetDockGroup(element!);
-				if (nm != null && nm == group)
-					return element;
+				return DockGroups[group];
+			}
+			catch
+			{
 			}
 
 			return null;
@@ -322,50 +365,34 @@ namespace WpfDockManager
 			if (items == null)
 				return;
 
-			var counter = 0;
+			// When an item is docked, we have to reparent it to our own control. Because of this, we get
+			// a VisualChildrenChanged event which causes the item be removed from this layoutlist as well.
 			while (items.Count > 0)
 			{
-				if (counter > items.Count)
-					throw new InvalidOperationException("Endless loop detected");
-
-				// Just make sure we don't have an endless loop if an item can not be
-				// docked and will stay in the list forever.
-				counter++;
-
-				var element = items[0]!.Object as UIElement;
+				var element = items.Pop(0)!.Object as UIElement;
 				if (element == null)
-				{
-					items.RemoveAt(0);
 					continue;
-				}
 
-				UIElement? target = null;
-
-				var group = GetDockGroup(element);
-				if (group != null && group.Length > 0)
-				{
-					target = FindGroup(group);
-					if (target == null)
-						throw new InvalidOperationException("Target '" + group + "' must be defined.");
-				}
+				TabControl? target = FindGroup(GetDockGroup(element));
+				if (target == null)
+					target = GetRootTabControl();
 
 				var dock = GetDock(element);
-				int index = GetDockIndex(element);
+				var index = GetDockIndex(element);
+
+				DockElement(element, dock, target, index);
 
 				// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
 				//ResetProperties(element);
-
-				DockElement(element, dock, target);
 			}
 		}
-		private void ResetProperties(UIElement? element)
-		{
-			if (element == null)
-				return;
 
-			element.ClearValue(DockProperty);
-			element.ClearValue(DockGroupProperty);
-			element.ClearValue(DockIndexProperty);
+		protected TabControl? GetRootTabControl()
+		{
+			if (_rootGrid.Children.Count == 0)
+				return null;
+
+			return _rootGrid.Children[0] as TabControl;
 		}
 
 		/// <summary>
@@ -373,8 +400,8 @@ namespace WpfDockManager
 		/// If index is not specified, it will be appended at the end.
 		/// </summary>
 		/// <param name="element"></param>
-		/// <returns></returns>
-		public TabControl WrapElement(FrameworkElement element, TabControl? tabCtrl = null, int index = -1, string? title = "")
+		/// <returns>The specified tabctrl or a new one.</returns>
+		public TabControl CreateElementTab(FrameworkElement element, TabControl? tabCtrl = null, int index = -1, string? title = "")
 		{
 			DockingHelper.RemoveElementFromItsParent(element);
 
@@ -388,23 +415,18 @@ namespace WpfDockManager
 			ti.Header = title;
 			ti.Content = element;
 			if (index == -1)
-			{
-				var c = tabCtrl.Items.Count;
-				if (c > 0)
-					index = c - 1;
-				else
-					index = 0;
-			}
+				index = tabCtrl.Items.Count;
+
 			tabCtrl.Items.Insert(index, ti);
 
 			return tabCtrl;
 		}
+
 		public void DockElement(UIElement element, DockType dock, UIElement? target = null, int index = -1)
 		{
 			if (element == target)
 				throw new ArgumentException("Can not dock an element on itself!");
 
-			var title = GetDockTitle(element);
 			var item = element as FrameworkElement;
 			if (item == null)
 				throw new ArgumentException("Item is not a FrameworkItem");
@@ -414,24 +436,27 @@ namespace WpfDockManager
 			//	throw new ArgumentException("Item is not connected to a DockingPanel");
 
 			// The first item is always in the center as there are no objects we could split.
-			if (_rootChild.Children.Count == 0)
+			if (_rootGrid.Children.Count == 0)
 				dock = DockType.None;
 
 			switch (dock)
 			{
 				case DockType.None:
 				{
-					// If we already have children, we need to know where to put the item
-					// for a center object. If no dock position is specified, the current
-					// item can only be added to an existing TabControl. Only if the window
-					// is empty, we put it as the first item.
-					if (_rootChild.Children.Count != 0 && target == null)
-						throw new InvalidOperationException("Item can not be added without a target");
+					var title = GetDockTitle(element);
 
-					var tabCtrl = WrapElement(item, title: title);
-					_rootChild.Children.Add(tabCtrl);
-					Grid.SetRow(tabCtrl, 0);
-					Grid.SetColumn(tabCtrl, 0);
+					// If we have no target for a child which should be attached to the center
+					// we add it to the root.
+					var tabCtrl = CreateElementTab(item, tabCtrl: target as TabControl, title: title, index: index);
+					if (target == null)
+					{
+						_rootGrid.Children.Add(tabCtrl);
+						Grid.SetRow(tabCtrl, 0);
+						Grid.SetColumn(tabCtrl, 0);
+						target = tabCtrl;
+
+						//throw new InvalidOperationException("Item can not be added without a target");
+					}
 				}
 				break;
 			}
@@ -446,80 +471,5 @@ namespace WpfDockManager
 			InvalidateMeasure();
 		}
 		#endregion Un-/Docking of elements
-
-		public static void RemoveElementFromItsParent(FrameworkElement? el)
-		{
-			if (el == null)
-				return;
-
-			if (el.Parent == null)
-				return;
-
-			var panel = el.Parent as Panel;
-			if (panel != null)
-			{
-				panel.Children.Remove(el);
-				return;
-			}
-
-			var decorator = el.Parent as Decorator;
-			if (decorator != null)
-			{
-				decorator.Child = null;
-				return;
-			}
-
-			var contentPresenter = el.Parent as ContentPresenter;
-			if (contentPresenter != null)
-			{
-				contentPresenter.Content = null;
-				return;
-			}
-
-			var contentControl = el.Parent as ContentControl;
-			if (contentControl != null)
-				contentControl.Content = null;
-		}
-
-		private void ReplaceChild(UIElement oldChild, UIElement newChild)
-		{
-		//	//var dockType = GetDock(oldChild);
-		//	//dockType = GetDock(newChild);
-		//	//dockType = GetDock(this);
-
-		//	// Disconnect from parent first, before we can add it to the grid.
-		//	RemoveElementFromItsParent(oldChild as FrameworkElement);
-		//	//RemoveElementFromItsParent(newChild as FrameworkElement);
-		//	//parent.RemoveLogicalChild(oldChild);
-		//	//var parent = VisualTreeHelper.GetParent(oldChild);
-
-		//	// Create a container (e.g., a Grid) to hold both old and new children
-		//	//TabControl tabCtrl = 
-		//	//Grid container = new Grid();
-		//	//container.Children.Add(oldChild);
-		//	//container.Children.Add(newChild);
-		//	UIElement container = newChild;
-
-		//	// Replace the old child with the container in the visual tree
-		//	int index = InternalChildren.IndexOf(oldChild);
-		//	if (index >= 0)
-		//	{
-		//		InternalChildren.RemoveAt(index);
-		//		InternalChildren.Insert(index, container);
-
-		//		// Update the corresponding child reference
-		//		if (oldChild == _topChild)
-		//			_topChild = container;
-
-		//		if (oldChild == _bottomChild)
-		//			_bottomChild = container;
-
-		//		if (oldChild == _leftChild)
-		//			_leftChild = container;
-
-		//		if (oldChild == _rightChild)
-		//			_rightChild = container;
-		//	}
-		}
 	}
 }

@@ -24,6 +24,8 @@ namespace WpfDockManager
 
 			T? foundParent = null;
 			var currentParent = VisualTreeHelper.GetParent(child);
+			if (currentParent == null)
+				return null;
 
 			do
 			{

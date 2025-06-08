@@ -55,10 +55,10 @@
 				DockTitle is the title that should appear on the tab item header.
 				DockGroup: All items with the same group name will be added to the same TabControl.
 			-->
-			<Button DMNS:DockingPanel.DockGroup="BrowserGroup" DMNS:DockingPanel.DockTitle="LeftButtonTabText">MyButtonTextLeft1</Button>
-			<Button DMNS:DockingPanel.DockGroup="BrowserGroup">MyButtonTextLeft2</Button>
+			<Button DMNS:DockingPanel.DockTitle="LeftButtonTabText1">MyButtonTextLeft1</Button>
+			<Button DMNS:DockingPanel.DockTitle="SecondLeftButton2">MyButtonTextLeft2</Button>
 			<!--
-			<Button DMNS:DockingPanel.DockName="PropertyGroup" DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
+			<Button DMNS:DockingPanel.DockGroup="PropertyGroup" DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
 			<Button DMNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
 			<Button DMNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>
 			<Button DMNS:DockingPanel.DockName="DocumentGroup">MyButtonTextCenter1</Button>

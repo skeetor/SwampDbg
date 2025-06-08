@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Xml.Linq;
 using WpfDockManager.Layout;
 
 namespace WpfDockManager
@@ -79,16 +81,33 @@ namespace WpfDockManager
 
 		public void Remove(T? element)
 		{
-			T? layoutItem = Find(element);
-			if (layoutItem == null)
+			T? item = Find(element);
+			if (item == null)
 				return;
 
-			_items.Remove(layoutItem!);
+			_items.Remove(item);
 		}
 
 		public void RemoveAt(int index)
 		{
 			_items.RemoveAt(index);
+		}
+
+		public void Pop(T? element)
+		{
+			T? item = Find(element);
+			if (item != null)
+				_items.Remove(item);
+		}
+
+		public T? Pop(int index)
+		{
+			if (_items.Count <= index)
+				return default(T);
+
+			T? item = _items[index];
+			_items.RemoveAt(index);
+			return item;
 		}
 
 		public static UniqueList<T>? operator +(UniqueList<T> list, T? element)
@@ -117,6 +136,8 @@ namespace WpfDockManager
 		public T? Add(U? element) => Add(Converter(element));
 
 		public void Remove(U? element) => Remove(Converter(element));
+
+		public void Pop(U? element) => Pop(Converter(element));
 
 		public static UniqueList<T, U> operator +(UniqueList<T, U> list, U? element)
 		{
