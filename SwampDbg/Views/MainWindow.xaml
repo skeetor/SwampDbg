@@ -58,10 +58,29 @@
 					a named item will have a DockAnchor property set with "<name>Anchor" so it can serve as a
 					target as well.
 			-->
-			<Button DMNS:DockingPanel.DockTitle="LeftButtonTabText1">MyButtonTextLeft1</Button>
-			<Button DMNS:DockingPanel.DockTitle="SecondLeftButton2">MyButtonTextLeft2</Button>
+			<Button
+				DMNS:DockingPanel.DockAnchor="BrowserGroup"
+				DMNS:DockingPanel.DockTitle="LeftButtonTabText1"
+				>MyButtonTextLeft1</Button>
+			<Button
+				DMNS:DockingPanel.DockTarget="BrowserGroup"
+				DMNS:DockingPanel.DockAnchor="BrowserGroup2"
+				DMNS:DockingPanel.DockTitle="SecondLeftButton2"
+				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft2</Button>
+			<Button
+				DMNS:DockingPanel.DockTarget="BrowserGroup"
+				DMNS:DockingPanel.DockTitle="SecondLeftButton3"
+				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft3</Button>
 			<!--
-			<Button DMNS:DockingPanel.DockAnchor="PropertyGroup" DMNS:DockingPanel.Dock="Right">MyButtonTextRight</Button>
+			<Button
+				DMNS:DockingPanel.DockAnchor="PropertyGroup"
+				DMNS:DockingPanel.DockTarget="BrowserGroupAnchor"
+				DMNS:DockingPanel.DockTitle="PropertyTab"
+				DMNS:DockingPanel.Dock="Left">MyButtonTextRight</Button>
+			<Button
+				DMNS:DockingPanel.DockTarget="BrowserGroupAnchor"
+				DMNS:DockingPanel.DockTitle="CenterTab"
+				DMNS:DockingPanel.Dock="Right">CenterText</Button>
 			<Button DMNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
 			<Button DMNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>
 			<Button DMNS:DockingPanel.DockName="DocumentGroup">MyButtonTextCenter1</Button>

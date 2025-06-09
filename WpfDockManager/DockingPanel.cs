@@ -1,5 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Data.Common;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using LayoutItemList = WpfDockManager.UniqueList<WpfDockManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
 namespace WpfDockManager
@@ -46,14 +49,14 @@ namespace WpfDockManager
 
 	public class DockingPanel : Panel
 	{
-		private Grid _rootGrid;
-
 		// When the class is instantiated we have to remember all items added to it
 		// so we can create the layout when all items are fully loaded. Properties
 		// are added lazily, so we have to wait until an element has finished getting
 		// all properties.
 		private LayoutItemList? LayoutItems { get; set; }
+
 		private Dictionary<string, TabControl> DockGroups = new Dictionary<string, TabControl>();
+		private DockingSplitter _root = new();
 
 		#region Dock property
 		//public static readonly DependencyProperty DockProperty =
@@ -127,37 +130,35 @@ namespace WpfDockManager
 
 		private static void OnDockAnchorChanged(DependencyObject child, DependencyPropertyChangedEventArgs e)
 		{
-			var parent = DockingHelper.FindParentClass<DockingPanel>(child);
-			if (parent == null)
-				return;
+			//var parent = DockingHelper.FindParentClass<DockingPanel>(child);
+			//if (parent == null)
+			//	return;
 
-			var newGroup = (e.NewValue as string)!;
-			var tabCtrl = parent.FindAnchor(newGroup);
+			//var newGroup = (e.NewValue as string)!;
+			//var tabCtrl = parent.FindAnchor(newGroup);
 
-			// If we already have a tab for this group we don't need to do anything.
-			if (tabCtrl == null)
-			{
-				if (newGroup.Length > 0)
-				{
-					tabCtrl = new TabControl();
-					parent.DockGroups[newGroup] = tabCtrl;
-					SetDockAnchor(tabCtrl, newGroup+"Anchor");
+			//// If we already have a tab for this group we don't need to do anything.
+			//if (tabCtrl == null)
+			//{
+			//	if (newGroup.Length > 0)
+			//	{
+			//		tabCtrl = new TabControl();
+			//		var tabGroup = newGroup + "Anchor";
 
-					var tab = parent.GetRootTabControl();
-					if (tab == null)
-						parent.AttachToGrid(tabCtrl);
-				}
-			}
+			//		parent.DockGroups[tabGroup] = tabCtrl;
+			//		SetDockAnchor(tabCtrl, tabGroup);
+			//	}
+			//}
 
-			var oldGroup = (e.OldValue as string)!;
-			if (oldGroup.Length == 0)
-				return;
+			//var oldGroup = (e.OldValue as string)!;
+			//if (oldGroup.Length == 0)
+			//	return;
 
-			tabCtrl = parent.FindAnchor(oldGroup);
-			if (tabCtrl == null)
-				return;
+			//tabCtrl = parent.FindAnchor(oldGroup);
+			//if (tabCtrl == null)
+			//	return;
 
-			parent.DockGroups.Remove(oldGroup);
+			//parent.DockGroups.Remove(oldGroup);
 		}
 
 		public static string GetDockAnchor(UIElement element)
@@ -257,8 +258,8 @@ namespace WpfDockManager
 			LayoutItems = new LayoutItemList();
 			Loaded += OnLoadedEvent;
 
-			_rootGrid = CreateDefaultGrid();
-			Children.Add(_rootGrid);
+			_root.Aligned = DockingSplitter.Alignment.Vertical;
+			Children.Add(_root);
 		}
 
 		private void OnLoadedEvent(object? sender, EventArgs e)
@@ -266,32 +267,15 @@ namespace WpfDockManager
 			if (LayoutItems == null)
 				return;
 
-			InitLayout(LayoutItems);
-
+			var items = LayoutItems;
 			// These items are only used during initialization. Once this is done
 			// We can no longer rely on the references anyway, as they might have been
 			// destroyed or moved, so we discard them.
 			LayoutItems = null;
-			//DockGroups = new ();
+			InitLayout(items);
 		}
 
-		private Grid CreateDefaultGrid()
-		{
-			// We create a grid that always spans the full window
-			var grid = new Grid();
-			RowDefinition row = new RowDefinition();
-			row.Height = new GridLength(1.0, GridUnitType.Star);
-			grid.RowDefinitions.Add(row);
-
-			ColumnDefinition column = new ColumnDefinition();
-			column.Width = new GridLength(1.0, GridUnitType.Star);
-			grid.ColumnDefinitions.Add(column);
-
-			//grid.HorizontalAlignment = HorizontalAlignment.Left;
-			//grid.VerticalAlignment = VerticalAlignment.Top;
-
-			return grid;
-		}
+		public bool IsEmpty() => _root.IsEmpty();
 
 		private void Refresh(UIElement child)
 		{
@@ -308,14 +292,14 @@ namespace WpfDockManager
 
 		protected override Size MeasureOverride(Size availableSize)
 		{
-			_rootGrid.Measure(availableSize);
+			_root.Measure(availableSize);
 
-			return _rootGrid.DesiredSize;
+			return _root.DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Size finalSize)
 		{
-			_rootGrid.Arrange(new Rect(new Point(0, 0), finalSize));
+			_root.Arrange(new Rect(new Point(0, 0), finalSize));
 
 			return finalSize;
 		}
@@ -323,7 +307,7 @@ namespace WpfDockManager
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
 			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
-			if (LayoutItems == null || visualAdded == _rootGrid)
+			if (LayoutItems == null || visualAdded == _root)
 				return;
 
 			UIElement? child = visualAdded as UIElement;
@@ -401,37 +385,19 @@ namespace WpfDockManager
 				if (element == null)
 					continue;
 
-				var nm = GetDockAnchor(element);
+				var nm = GetDockTarget(element);
 				TabControl? target = FindAnchor(nm);
-				if (target == null)
-					target = GetRootTabControl();
 
 				var dock = GetDock(element);
 				var index = GetDockIndex(element);
 
-				DockElement(element, dock, target, index);
+				DockElement(element, dock, target, index, batchDock: true);
 
 				// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
 				//ResetProperties(element);
 			}
-		}
 
-		protected TabControl? GetRootTabControl()
-		{
-			if (_rootGrid.Children.Count == 0)
-				return null;
-
-			return _rootGrid.Children[0] as TabControl;
-		}
-
-		public void AttachToGrid(UIElement element, Grid? grid = null, int row = 0, int column = 0)
-		{
-			if (grid == null)
-				grid = _rootGrid;
-
-			grid.Children.Add(element);
-			Grid.SetRow(element, row);
-			Grid.SetColumn(element, column);
+			InvalidateMeasure();
 		}
 
 		/// <summary>
@@ -440,12 +406,20 @@ namespace WpfDockManager
 		/// </summary>
 		/// <param name="element"></param>
 		/// <returns>The specified tabctrl or a new one.</returns>
-		protected static TabControl CreateElementTab(FrameworkElement element, TabControl? tabCtrl = null, int index = -1)
+		protected TabControl CreateTabElement(FrameworkElement element, TabControl? tabCtrl = null, int index = -1)
 		{
 			DockingHelper.RemoveElementFromItsParent(element);
 
 			if (tabCtrl == null)
+			{
 				tabCtrl = new TabControl();
+				var nm = GetDockAnchor(element);
+				if (nm.Length > 0)
+				{
+					DockGroups[nm] = tabCtrl;
+					SetDockAnchor(element, nm+"Anchor");
+				}
+			}
 
 			var title = GetDockTitle(element);
 			if (title == null)
@@ -473,39 +447,42 @@ namespace WpfDockManager
 			if (item == null)
 				throw new ArgumentException("Item is not a FrameworkItem");
 
-			//var parent = DockingHelper.FindParentClass<DockingPanel>(element);
-			//if (parent == null)
-			//	throw new ArgumentException("Item is not connected to a DockingPanel");
-
-			// The first item is always in the center as there are no objects we could split.
-			if (_rootGrid.Children.Count == 0)
+			if (IsEmpty())
 				dock = DockType.None;
 
 			switch (dock)
 			{
 				case DockType.None:
 				{
-					var tabCtrl = CreateElementTab(item, tabCtrl: target as TabControl, index: index);
-
 					// If an element should be added to the center we need a target to add the item to.
-					// Only if the panel is empty, we can create a new tab automatically.
+					// If the panel is empty, we can create a new tab automatically.
 					if (target == null)
 					{
-						if (GetRootTabControl() != null)
-							throw new InvalidOperationException("If no dock position is specified the element needs a target");
+						if (!IsEmpty())
+							target = _root.GetChild(0);
 
-						AttachToGrid(tabCtrl);
+						//target = _rootGrid.GetChild(0) as TabControl;
+						//if (target == null && !IsEmpty())
+						//	throw new InvalidOperationException("Unable to find a default TabControl as target");
 					}
+
+					var tabCtrl = CreateTabElement(item, tabCtrl: target as TabControl, index: index);
+					if (IsEmpty())
+						_root.Add(tabCtrl);
 				}
 				break;
 
+				// Dock to left of target
 				case DockType.Left:
 				{
+					VerticalSplit(item, true, target as TabControl);
 				}
 				break;
 
+				// Dock to right of target
 				case DockType.Right:
 				{
+					VerticalSplit(item, false, target as TabControl);
 				}
 				break;
 
@@ -530,6 +507,33 @@ namespace WpfDockManager
 
 			if (!batchDock)
 				InvalidateMeasure();
+		}
+
+		protected void VerticalSplit(FrameworkElement element, bool left, TabControl? target = null)
+		{
+			DockingSplitter? parent;
+
+			if (target == null)
+				parent = _root;
+			else
+				parent = VisualTreeHelper.GetParent(target) as DockingSplitter;
+
+			if (parent == null)
+				throw new InvalidOperationException("DockingGrid for target '" + GetDockTarget(target!) + "' not found!");
+
+			var index = 0;
+			if (!left)
+				index = -1;
+
+			if (target != null)
+			{
+			}
+
+			if (!left)
+				index = 1;
+
+			var tabCtrl = CreateTabElement(element, tabCtrl: null);
+			parent.Insert(tabCtrl,index);
 		}
 
 		protected void UndockElement(UIElement? element)
