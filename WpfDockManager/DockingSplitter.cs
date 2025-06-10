@@ -207,14 +207,6 @@ namespace WpfDockManager
 			}
 		}
 
-		public void DumpGrid()
-		{
-			Debug.Write("Dumping:\n");
-			foreach (var child in Children)
-				Debug.Write(child.ToString()+"\n");
-			Debug.Write("\n");
-		}
-
 		protected void InsertSplitter(int index, int offset)
 		{
 			var gridSplitter = GetDefaultGridSplitter();
@@ -234,6 +226,43 @@ namespace WpfDockManager
 				Children.Insert(index, gridSplitter);
 				SetIndex(gridSplitter, index + offset);
 			}
+		}
+		
+		//private void SaveSplitterPosition()
+		//{
+		//	Properties.Settings.Default.Column1Width = myGrid.ColumnDefinitions[0].Width.Value;
+		//	Properties.Settings.Default.Save();
+		//}
+
+		//private void RestoreSplitterPosition()
+		//{
+		//	if (Properties.Settings.Default.Column1Width > 0)
+		//	{
+		//		myGrid.ColumnDefinitions[0].Width = new GridLength(Properties.Settings.Default.Column1Width);
+		//	}
+		//}
+
+		public void SetLength(int index, int length)
+		{
+			if (index < 0 || index >= Children.Count)
+				throw new IndexOutOfRangeException("Index "+index.ToString()+"/"+ Children.Count.ToString());
+
+			if (Aligned == Alignment.Vertical)
+				ColumnDefinitions[index].Width = new GridLength(length, GridUnitType.Pixel);
+			else
+				RowDefinitions[index].Height = new GridLength(length, GridUnitType.Pixel);
+
+			if (Children.Count <= 1)
+				return;
+
+			if (index == Children.Count - 1)
+				index--;
+			else
+				index++;
+
+			var splitter = Children[index] as GridSplitter;
+			if (splitter != null)
+				splitter.InvalidateMeasure();
 		}
 	}
 }

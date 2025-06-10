@@ -251,6 +251,38 @@ namespace WpfDockManager
 			element.SetValue(DockTitleProperty, value);
 		}
 		#endregion DockTitle property
+		#region DockLength property
+		public static readonly DependencyProperty DockLengthProperty =
+				DependencyProperty.RegisterAttached(
+						"DockLength",
+						typeof(int),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							-1
+							),
+						new ValidateValueCallback(IsValidDockLength)
+					);
+
+		internal static bool IsValidDockLength(object o)
+		{
+			// Length may be -1 for the default size of the control
+			// or the value may not be 0 or less.
+			int length = (int)o;
+			return (length == -1 || length > 0);
+		}
+
+		public static int GetDockLength(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (int)element.GetValue(DockLengthProperty);
+		}
+
+		public static void SetDockLength(UIElement element, int value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(DockTitleProperty, value);
+		}
+		#endregion DockLength property
 
 		public DockingPanel()
 			: base()
@@ -406,17 +438,17 @@ namespace WpfDockManager
 		/// </summary>
 		/// <param name="element"></param>
 		/// <returns>The specified tabctrl or a new one.</returns>
-		protected TabControl CreateTabElement(FrameworkElement element, TabControl? tabCtrl = null, int index = -1)
+		protected TabControl CreateTabElement(FrameworkElement element, TabControl? tabControl = null, int index = -1)
 		{
 			DockingHelper.RemoveElementFromItsParent(element);
 
-			if (tabCtrl == null)
+			if (tabControl == null)
 			{
-				tabCtrl = new TabControl();
+				tabControl = new TabControl();
 				var nm = GetDockAnchor(element);
 				if (nm.Length > 0)
 				{
-					DockGroups[nm] = tabCtrl;
+					DockGroups[nm] = tabControl;
 					SetDockAnchor(element, nm+"Anchor");
 				}
 			}
@@ -432,10 +464,10 @@ namespace WpfDockManager
 			};
 
 			if (index == -1)
-				index = tabCtrl.Items.Count;
-			tabCtrl.Items.Insert(index, ti);
+				index = tabControl.Items.Count;
+			tabControl.Items.Insert(index, ti);
 
-			return tabCtrl;
+			return tabControl;
 		}
 
 		public void DockElement(UIElement element, DockType dock, UIElement? target = null, int index = -1, bool batchDock = false)
@@ -466,9 +498,11 @@ namespace WpfDockManager
 						//	throw new InvalidOperationException("Unable to find a default TabControl as target");
 					}
 
-					var tabCtrl = CreateTabElement(item, tabCtrl: target as TabControl, index: index);
+					var tabControl = CreateTabElement(item, tabControl: target as TabControl, index: index);
 					if (IsEmpty())
-						_root.Add(tabCtrl);
+						_root.Add(tabControl);
+
+					UpdateLength(item, VisualTreeHelper.GetParent(tabControl) as DockingSplitter, tabControl);
 				}
 				break;
 
@@ -527,6 +561,20 @@ namespace WpfDockManager
 			if (!batchDock)
 				InvalidateMeasure();
 		}
+
+		protected void UpdateLength(UIElement element, DockingSplitter? parent, TabControl tabControl)
+		{
+			if (parent == null)
+				return;
+
+			var length = GetDockLength(element);
+			if (length == -1)
+				return;
+
+			var pos = parent.GetIndex(tabControl);
+			parent.SetLength(pos, length);
+		}
+
 		protected void HorizontalSplit(FrameworkElement element, bool before, TabControl? target = null) => Split(element, before, DockingSplitter.Alignment.Horizontal, target);
 
 		protected void VerticalSplit(FrameworkElement element, bool before, TabControl? target = null) => Split(element, before, DockingSplitter.Alignment.Vertical, target);
@@ -553,8 +601,10 @@ namespace WpfDockManager
 			if (parent.Aligned != axis)
 				throw new InvalidOperationException("DockingGrid is not of the same alignment.");
 
-			var tabCtrl = CreateTabElement(element, tabCtrl: null);
-			parent.Insert(tabCtrl, index);
+			var tabControl = CreateTabElement(element, tabControl: null);
+			parent.Insert(tabControl, index);
+
+			UpdateLength(element, parent, tabControl);
 		}
 
 		protected void UndockElement(UIElement? element)
