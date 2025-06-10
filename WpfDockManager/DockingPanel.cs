@@ -475,6 +475,10 @@ namespace WpfDockManager
 				// Dock to left of target
 				case DockType.Left:
 				{
+					var tabCtrl = target as TabControl;
+					if (tabCtrl == null && target != null)
+						throw new InvalidOperationException("Target is not a TabControl");
+
 					VerticalSplit(item, true, target as TabControl);
 				}
 				break;
@@ -482,17 +486,32 @@ namespace WpfDockManager
 				// Dock to right of target
 				case DockType.Right:
 				{
+					var tabCtrl = target as TabControl;
+
+					if (tabCtrl == null && target != null)
+						throw new InvalidOperationException("Target is not a TabControl");
+
 					VerticalSplit(item, false, target as TabControl);
 				}
 				break;
 
 				case DockType.Top:
 				{
+					var tabCtrl = target as TabControl;
+					if (tabCtrl == null && target != null)
+						throw new InvalidOperationException("Target is not a TabControl");
+
+					HorizontalSplit(item, true, target as TabControl);
 				}
 				break;
 
 				case DockType.Bottom:
 				{
+					var tabCtrl = target as TabControl;
+					if (tabCtrl == null && target != null)
+						throw new InvalidOperationException("Target is not a TabControl");
+
+					HorizontalSplit(item, false, target as TabControl);
 				}
 				break;
 
@@ -508,8 +527,11 @@ namespace WpfDockManager
 			if (!batchDock)
 				InvalidateMeasure();
 		}
+		protected void HorizontalSplit(FrameworkElement element, bool before, TabControl? target = null) => Split(element, before, DockingSplitter.Alignment.Horizontal, target);
 
-		protected void VerticalSplit(FrameworkElement element, bool left, TabControl? target = null)
+		protected void VerticalSplit(FrameworkElement element, bool before, TabControl? target = null) => Split(element, before, DockingSplitter.Alignment.Vertical, target);
+
+		protected void Split(FrameworkElement element, bool before, DockingSplitter.Alignment axis, TabControl? target = null)
 		{
 			DockingSplitter? parent;
 
@@ -521,19 +543,18 @@ namespace WpfDockManager
 			if (parent == null)
 				throw new InvalidOperationException("DockingGrid for target '" + GetDockTarget(target!) + "' not found!");
 
-			var index = 0;
-			if (!left)
-				index = -1;
+			var index = parent.GetIndex(target);
+			if (index == -1 && before)
+				index = 0;
+			else if (!before && target != null)
+				index++;
 
-			if (target != null)
-			{
-			}
-
-			if (!left)
-				index = 1;
+			// TODO: We have to create a new splitter in this case.
+			if (parent.Aligned != axis)
+				throw new InvalidOperationException("DockingGrid is not of the same alignment.");
 
 			var tabCtrl = CreateTabElement(element, tabCtrl: null);
-			parent.Insert(tabCtrl,index);
+			parent.Insert(tabCtrl, index);
 		}
 
 		protected void UndockElement(UIElement? element)

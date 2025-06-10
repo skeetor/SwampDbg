@@ -49,7 +49,7 @@
 			</ToolBarTray>
 		</StackPanel>
 
-		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
+        <DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
 			<!-- The first element doesn't need a dock position because the window is empty anyway and there is nothing we can dock to.
 				If it is provided it is ignored.
 				DockTitle is the title that should appear on the tab item header.
@@ -63,14 +63,13 @@
 				DMNS:DockingPanel.DockTitle="LeftButtonTabText1"
 				>MyButtonTextLeft1</Button>
 			<Button
-				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockAnchor="BrowserGroup2"
+				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton2"
 				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft2</Button>
 			<Button
-				DMNS:DockingPanel.DockTarget="BrowserGroup"
-				DMNS:DockingPanel.DockTitle="SecondLeftButton3"
-				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft3</Button>
+				DMNS:DockingPanel.Dock="Right"
+                DMNS:DockingPanel.DockTitle="SecondLeftButton3">MyButtonTextLeft3</Button>
 			<!--
 			<Button
 				DMNS:DockingPanel.DockAnchor="PropertyGroup"
