@@ -429,6 +429,14 @@ namespace WpfDockManager
 				//ResetProperties(element);
 			}
 
+			// We have to set the lengths of the items, after the layout has been estalished.
+			// This can not be done directly, because the splitters can not be moved appropriately
+			// and when new elements are added to the splitter, it would get disrupted.
+			//int[] cols = { 100, 500, 20 };
+			//for (int i = 0; i < cols.Length; i++)
+			//	_root.SetLength(i * 2, cols[i]);
+			_root.DumpGrid();
+
 			InvalidateMeasure();
 		}
 

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -247,22 +248,40 @@ namespace WpfDockManager
 			if (index < 0 || index >= Children.Count)
 				throw new IndexOutOfRangeException("Index "+index.ToString()+"/"+ Children.Count.ToString());
 
+			// The last element will never be changed, because the splitter should use up the remaining available space.
+			//if (index == Children.Count-1)
+			//	return;
+
 			if (Aligned == Alignment.Vertical)
 				ColumnDefinitions[index].Width = new GridLength(length, GridUnitType.Pixel);
 			else
 				RowDefinitions[index].Height = new GridLength(length, GridUnitType.Pixel);
 
-			if (Children.Count <= 1)
-				return;
+			//if (Children.Count <= 1)
+			//	return;
 
-			if (index == Children.Count - 1)
-				index--;
+			//if (index == Children.Count - 1)
+			//	index--;
+			//else
+			//	index++;
+
+			//var splitter = Children[index] as GridSplitter;
+			//MoveSplitter(splitter, length);
+		}
+
+		public void DumpGrid()
+		{
+			Debug.WriteLine("GridDump");
+			if (Aligned == Alignment.Vertical)
+			{
+				foreach (var d in ColumnDefinitions)
+					Debug.WriteLine("Length (C): " + d.Width.Value.ToString());
+			}
 			else
-				index++;
-
-			var splitter = Children[index] as GridSplitter;
-			if (splitter != null)
-				splitter.InvalidateMeasure();
+			{
+				foreach (var d in RowDefinitions)
+					Debug.WriteLine("Length (R): " + d.Height.Value.ToString());
+			}
 		}
 	}
 }

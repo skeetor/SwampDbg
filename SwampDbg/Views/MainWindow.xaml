@@ -59,20 +59,20 @@
 					target as well.
 			-->
 			<Button
+				DMNS:DockingPanel.DockLength="100"
 				DMNS:DockingPanel.DockAnchor="BrowserGroup"
-				DMNS:DockingPanel.DockLength="200"
 				DMNS:DockingPanel.DockTitle="LeftButtonTabText1"
 				>MyButtonTextLeft1</Button>
 			<Button
-				DMNS:DockingPanel.DockLength="50"
+				DMNS:DockingPanel.DockLength="40"
 				DMNS:DockingPanel.DockAnchor="BrowserGroup2"
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton2"
 				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft2</Button>
 			<Button
-				DMNS:DockingPanel.DockLength="500"
-				DMNS:DockingPanel.DockTarget="BrowserGroup2"
-				DMNS:DockingPanel.Dock="Right"
+				DMNS:DockingPanel.DockLength="-1"
+				DMNS:DockingPanel.DockTarget="BrowserGroup"
+				DMNS:DockingPanel.Dock="Left"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3">MyButtonTextLeft3</Button>
 			<!--
 			<Button
