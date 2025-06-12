@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using LayoutItemList = WpfDockManager.UniqueList<WpfDockManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
 namespace WpfDockManager
@@ -488,7 +489,16 @@ namespace WpfDockManager
 				throw new ArgumentException("Item is not a FrameworkItem");
 
 			if (IsEmpty())
+			{
+				if (dock is DockType.Top or DockType.Bottom)
+					_root.Aligned = DockingSplitter.Alignment.Horizontal;
+				else if (dock is DockType.Left or DockType.Right)
+					_root.Aligned = DockingSplitter.Alignment.Vertical;
+				else if (dock == DockType.Floating)
+					throw new NotImplementedException("Floating not yet implmented");
+
 				dock = DockType.None;
+			}
 
 			switch (dock)
 			{
@@ -500,10 +510,6 @@ namespace WpfDockManager
 					{
 						if (!IsEmpty())
 							target = _root.GetChild(0);
-
-						//target = _rootGrid.GetChild(0) as TabControl;
-						//if (target == null && !IsEmpty())
-						//	throw new InvalidOperationException("Unable to find a default TabControl as target");
 					}
 
 					var tabControl = CreateTabElement(item, tabControl: target as TabControl, index: index);
@@ -592,12 +598,11 @@ namespace WpfDockManager
 			DockingSplitter? parent;
 
 			if (target == null)
-				parent = _root;
-			else
-				parent = VisualTreeHelper.GetParent(target) as DockingSplitter;
+				throw new InvalidOperationException("Target may not be null");
 
+			parent = VisualTreeHelper.GetParent(target) as DockingSplitter;
 			if (parent == null)
-				throw new InvalidOperationException("DockingGrid for target '" + GetDockTarget(target!) + "' not found!");
+				throw new InvalidOperationException("DockingGrid is not a parent for target '"+GetDockTarget(target)+"'");
 
 			var index = parent.GetIndex(target);
 			if (index == -1 && before)
@@ -605,14 +610,36 @@ namespace WpfDockManager
 			else if (!before && target != null)
 				index++;
 
-			// TODO: We have to create a new splitter in this case.
 			if (parent.Aligned != axis)
-				throw new InvalidOperationException("DockingGrid is not of the same alignment.");
+				parent = ReplaceWithSplitter(axis, parent, target!, before, out index);
 
+			// When we are splitting, the item will always need a new TabControl
 			var tabControl = CreateTabElement(element, tabControl: null);
 			parent.Insert(tabControl, index);
 
 			UpdateLength(element, parent, tabControl);
+		}
+
+		protected DockingSplitter ReplaceWithSplitter(DockingSplitter.Alignment axis, DockingSplitter parentSplitter, TabControl target, bool before, out int index)
+		{
+			var targetIndex = parentSplitter.GetIndex(target);
+			if (targetIndex == -1)
+				throw new InvalidOperationException("Target is not an element of the provided DockingSplitter");
+
+			var newSplitter = new DockingSplitter();
+			newSplitter.Aligned = axis;
+
+			DockingHelper.RemoveElementFromItsParent(target);
+			newSplitter.Add(target);
+
+			parentSplitter.ReplaceAt(targetIndex, newSplitter);
+
+			if (before)
+				index = 0;
+			else
+				index = 1;
+
+			return newSplitter;
 		}
 
 		protected void UndockElement(UIElement? element)

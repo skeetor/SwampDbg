@@ -157,7 +157,7 @@ namespace WpfDockManager
 			{
 				if (splitter)
 				{
-					MoveChildren(index, 2);
+					MoveChildrenPosition(index, 2);
 					InsertSplitter(index, 1);
 				}
 
@@ -168,7 +168,7 @@ namespace WpfDockManager
 			SetIndex(element, index);
 		}
 
-		private void MoveChildren(int from, int offset)
+		private void MoveChildrenPosition(int from, int offset)
 		{
 			if (offset == 0)
 				return;
@@ -228,7 +228,7 @@ namespace WpfDockManager
 				SetIndex(gridSplitter, index + offset);
 			}
 		}
-		
+
 		//private void SaveSplitterPosition()
 		//{
 		//	Properties.Settings.Default.Column1Width = myGrid.ColumnDefinitions[0].Width.Value;
@@ -243,6 +243,18 @@ namespace WpfDockManager
 		//	}
 		//}
 
+		public UIElement? ReplaceAt(int index, UIElement newChild)
+		{
+			if (index >= Children.Count)
+				return null;
+
+			var child = Children[index];
+			Children.RemoveAt(index);
+			Children.Insert(index, newChild);
+
+			return child;
+		}
+
 		public void SetLength(int index, int length)
 		{
 			if (index < 0 || index >= Children.Count)
@@ -252,10 +264,10 @@ namespace WpfDockManager
 			//if (index == Children.Count-1)
 			//	return;
 
-			if (Aligned == Alignment.Vertical)
-				ColumnDefinitions[index].Width = new GridLength(length, GridUnitType.Pixel);
-			else
-				RowDefinitions[index].Height = new GridLength(length, GridUnitType.Pixel);
+			//if (Aligned == Alignment.Vertical)
+			//	ColumnDefinitions[index].Width = new GridLength(length, GridUnitType.Pixel);
+			//else
+			//	RowDefinitions[index].Height = new GridLength(length, GridUnitType.Pixel);
 
 			//if (Children.Count <= 1)
 			//	return;
