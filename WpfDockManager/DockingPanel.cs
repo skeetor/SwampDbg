@@ -629,10 +629,8 @@ namespace WpfDockManager
 			var newSplitter = new DockingSplitter();
 			newSplitter.Aligned = axis;
 
-			DockingHelper.RemoveElementFromItsParent(target);
-			newSplitter.Add(target);
-
 			parentSplitter.ReplaceAt(targetIndex, newSplitter);
+			newSplitter.Add(target);
 
 			if (before)
 				index = 0;

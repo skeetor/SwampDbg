@@ -245,12 +245,19 @@ namespace WpfDockManager
 
 		public UIElement? ReplaceAt(int index, UIElement newChild)
 		{
-			if (index >= Children.Count)
+			if (index > Children.Count)
 				return null;
 
-			var child = Children[index];
-			Children.RemoveAt(index);
-			Children.Insert(index, newChild);
+			var child = GetChild(index);
+
+			Children.Add(newChild);
+			if (Aligned != Alignment.Vertical)
+				SetColumn(newChild, index);
+			else
+				SetRow(newChild, index);
+
+			//Children.Insert(index, newChild);
+			Children.Remove(child);
 
 			return child;
 		}
