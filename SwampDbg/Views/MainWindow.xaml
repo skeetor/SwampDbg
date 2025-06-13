@@ -5,6 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:local="clr-namespace:SwampDbg"
 	xmlns:DMNS="clr-namespace:WpfDockManager;assembly=WpfDockManager"
+	xmlns:uc="clr-namespace:SwampDbg.Controls"
 	mc:Ignorable="d"
 	Title="SwampDbg" Height="450" Width="800">
 
@@ -58,23 +59,23 @@
 					a named item will have a DockAnchor property set with "<name>Anchor" so it can serve as a
 					target as well.
 			-->
-			<Button
+            <uc:TestControl
 				DMNS:DockingPanel.DockAnchor="BrowserGroup"
-				DMNS:DockingPanel.DockTitle="LeftButtonTabText1"
-				>MyButtonTextLeft1</Button>
-			<Button
+				DMNS:DockingPanel.DockTitle="TabText1"
+				></uc:TestControl>
+            <uc:TestControl
 				DMNS:DockingPanel.DockAnchor="BrowserGroup2"
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
-				DMNS:DockingPanel.DockTitle="SecondLeftButton2"
-				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft2</Button>
-            <Button
+				DMNS:DockingPanel.DockTitle="TabText2"
+				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
+            <uc:TestControl
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
-				DMNS:DockingPanel.DockTitle="SecondLeftButton4"
-				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft4</Button>
-            <Button
+				DMNS:DockingPanel.DockTitle="TabText3"
+				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
+            <uc:TestControl
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
-				DMNS:DockingPanel.DockTitle="SecondLeftButton5"
-				DMNS:DockingPanel.Dock="Right">MyButtonTextLeft5</Button>
+				DMNS:DockingPanel.DockTitle="TabText4"
+				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
 			<!--
             <Button
 				DMNS:DockingPanel.DockTarget="BrowserGroup2"
