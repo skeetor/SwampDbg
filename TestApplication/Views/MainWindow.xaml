@@ -64,7 +64,6 @@
 				DMNS:DockingPanel.DockTitle="TabText1"
 				></uc:TestControl>
 			<uc:TestControl
-				DMNS:DockingPanel.DockAnchor="BrowserGroup2"
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="TabText2"
 				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
@@ -76,11 +75,11 @@
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="TabText4"
 				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
-			<!--
 			<Button
-				DMNS:DockingPanel.DockTarget="BrowserGroup2"
+				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.Dock="Top"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3">MyButtonTextLeft3</Button>
+			<!--
 			<Button
 				DMNS:DockingPanel.DockAnchor="PropertyGroup"
 				DMNS:DockingPanel.DockTarget="BrowserGroupAnchor"

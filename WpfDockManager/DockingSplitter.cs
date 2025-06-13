@@ -243,23 +243,21 @@ namespace WpfDockManager
 		//	}
 		//}
 
-		public UIElement? ReplaceAt(int index, UIElement newChild)
+		public int Replace(UIElement oldChild, UIElement newChild)
 		{
-			if (index > Children.Count)
-				return null;
+			int index = GetIndex(oldChild);
+			if (index == -1)
+				throw new InvalidOperationException("'oldChild' is not an element of this DockingSplitter");
 
-			var child = GetChild(index);
-
-			Children.Add(newChild);
-			if (Aligned != Alignment.Vertical)
+			Children.Insert(index, newChild);
+			if (Aligned == Alignment.Vertical)
 				SetColumn(newChild, index);
 			else
 				SetRow(newChild, index);
 
-			//Children.Insert(index, newChild);
-			Children.Remove(child);
+			Children.Remove(oldChild);
 
-			return child;
+			return index;
 		}
 
 		public void SetLength(int index, int length)
