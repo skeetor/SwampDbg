@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace WpfDockManager
 {
-	internal class DockingHelper
+	public class DockingHelper
 	{
 		/// <summary>
 		/// Recursively finds the specified parent in a control hierarchy

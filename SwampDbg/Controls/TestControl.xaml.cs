@@ -1,66 +1,79 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Xml.Linq;
+using WpfDockManager;
 
 namespace SwampDbg.Controls
 {
-    /// <summary>
-    /// Interaction logic for TestControl.xaml
-    /// </summary>
-    public partial class TestControl : UserControl
-    {
-        public TestControl()
-        {
-            InitializeComponent();
-        }
+	/// <summary>
+	/// Interaction logic for TestControl.xaml
+	/// </summary>
+	public partial class TestControl : UserControl
+	{
+		private static int InstanceCounter = 0;
 
-		private void OnAddTop(object sender, RoutedEventArgs e)
+		private static Dictionary<string, WpfDockManager.DockType> TypeNames =
+			new Dictionary<string, WpfDockManager.DockType>()
+			{
+				[nameof(WpfDockManager.DockType.Top)] = WpfDockManager.DockType.Top,
+				[nameof(WpfDockManager.DockType.Bottom)] = WpfDockManager.DockType.Bottom,
+				[nameof(WpfDockManager.DockType.Left)] = WpfDockManager.DockType.Left,
+				[nameof(WpfDockManager.DockType.Right)] = WpfDockManager.DockType.Right,
+				[nameof(WpfDockManager.DockType.Floating)] = WpfDockManager.DockType.Floating,
+				["Center"] = WpfDockManager.DockType.None
+			};
+
+		public TestControl()
 		{
-			MessageBox.Show("OnAddTop");
+			InitializeComponent();
+
+			InstanceCounter++;
+			SetText("New Instance: "+InstanceCounter.ToString());
 		}
 
-		private void OnRemoveTop(object sender, RoutedEventArgs e)
+		private DockingPanel GetDockingPanel()
 		{
-			MessageBox.Show("OnRemoveTop");
+			var mainWindow = (App.Current.MainWindow as MainWindow)!;
+			return mainWindow.GetDockingPanel();
 		}
 
-		private void OnAddBottom(object sender, RoutedEventArgs e)
+		public void SetText(string text)
 		{
-			MessageBox.Show("OnAddBottom");
+			_TextBoxCtrl.Text = text;
 		}
 
-		private void OnRemoveBottom(object sender, RoutedEventArgs e)
+		private void OnAddItem(object sender, RoutedEventArgs e)
 		{
-			MessageBox.Show("OnRemoveBottom");
+			HandleDocking(true);
 		}
 
-		private void OnAddLeft(object sender, RoutedEventArgs e)
+		private void OnRemoveItem(object sender, RoutedEventArgs e)
 		{
-			MessageBox.Show("OnAddLeft");
+			HandleDocking(false);
 		}
 
-		private void OnRemoveLeft(object sender, RoutedEventArgs e)
+		private void HandleDocking(bool add)
 		{
-			MessageBox.Show("OnRemoveLeft");
-		}
+			var targetName = _ComboBoxCtrl.SelectedValue.ToString()!;
+			var dock = TypeNames[targetName];
+			var dockPanel = GetDockingPanel();
 
-		private void OnAddRight(object sender, RoutedEventArgs e)
-		{
-			MessageBox.Show("OnAddRight");
-		}
+			if (add)
+			{
+				TabControl? target = null;
+				var splitter = DockingPanel.FindAssociatedContainers(this, out target);
 
-		private void OnRemoveRight(object sender, RoutedEventArgs e)
-		{
-			MessageBox.Show("OnRemoveRight");
-		}
-
-		private void OnAddCenter(object sender, RoutedEventArgs e)
-		{
-			MessageBox.Show("OnAddCenter");
-		}
-
-		private void OnRemoveCenter(object sender, RoutedEventArgs e)
-		{
-			MessageBox.Show("OnRemoveCenter");
+				if (splitter != null)
+				{
+					var element = new TestControl();
+					element.SetText("Instance: " + InstanceCounter.ToString());
+					DockingPanel.SetDockTitle(element, "Instance: "+InstanceCounter.ToString());
+					dockPanel.DockElement(element, dock, target);
+				}
+			}
+			else
+				dockPanel.UndockElement(this);
 		}
 	}
 }

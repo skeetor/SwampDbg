@@ -640,12 +640,59 @@ namespace WpfDockManager
 			return newSplitter;
 		}
 
-		protected void UndockElement(UIElement? element)
+		public void UndockElement(UIElement? element)
 		{
 			if (element == null)
 				return;
 
-			InvalidateMeasure();
+			throw new NotImplementedException("Undocking not yet implemented");
+			//InvalidateMeasure();
+		}
+
+		/// <summary>
+		/// Find the parent DockingSplitter and the TabControl which is directly associated to the splitter.
+		/// If a TabControl is encountered which is not a direct child of a splitter, it is ignored. The
+		/// TabControl may be null even if the splitter is not, as the splitter may be empty.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <param name="tabControl"></param>
+		/// <returns></returns>
+		public static DockingSplitter? FindAssociatedContainers(UIElement? element, out TabControl? tabControl)
+		{
+			tabControl = null;
+			if (element == null)
+				return null;
+
+			UIElement? parent = VisualTreeHelper.GetParent(element) as UIElement;
+			if (parent == null)
+				return null;
+
+			DockingSplitter? splitter = parent as DockingSplitter;
+			TabControl? tab = element as TabControl;
+			if (tab != null)
+				tabControl = tab;
+
+			if (splitter != null)
+				return splitter;
+
+			return FindAssociatedContainers(parent, out tabControl);
+		}
+
+		private static TabControl? FindParentTabControl(DependencyObject element)
+		{
+			if (element == null)
+				return null;
+
+			var parent = VisualTreeHelper.GetParent(element);
+			var tabControl = parent as TabControl;
+
+			if (tabControl != null)
+				return tabControl;
+
+			if (parent != null)
+				return FindParentTabControl(parent);
+
+			return null;
 		}
 	}
 }

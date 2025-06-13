@@ -1,6 +1,7 @@
 ﻿using SwampDbg.Configuration;
 using System.Windows;
 using System.Windows.Controls;
+using WpfDockManager;
 
 namespace SwampDbg
 {
@@ -14,6 +15,11 @@ namespace SwampDbg
 			InitializeComponent();
 			var generalConfig = App.GetConfig<GeneralConfig>() ?? new GeneralConfig();
 			UpdateFromConfig(generalConfig);
+		}
+
+		public DockingPanel GetDockingPanel()
+		{
+			return RootDockPanel;
 		}
 
 		private void UpdateFromConfig(GeneralConfig config)
