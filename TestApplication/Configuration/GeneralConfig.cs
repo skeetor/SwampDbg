@@ -1,4 +1,4 @@
-﻿namespace SwampDbg.Configuration
+﻿namespace TestApplication.Configuration
 {
 	class GeneralConfig
 	{

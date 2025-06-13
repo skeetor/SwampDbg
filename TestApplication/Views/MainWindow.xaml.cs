@@ -1,9 +1,9 @@
-﻿using SwampDbg.Configuration;
+﻿using TestApplication.Configuration;
 using System.Windows;
 using System.Windows.Controls;
 using WpfDockManager;
 
-namespace SwampDbg
+namespace TestApplication
 {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml

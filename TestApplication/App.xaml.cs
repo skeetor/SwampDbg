@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 
-using SwampDbg.Configuration;
+using TestApplication.Configuration;
 
-namespace SwampDbg
+namespace TestApplication
 {
 	/// <summary>
-	/// Startup code for SwampDbg
+	/// Startup code for TestApplication
 	/// </summary>
 	public partial class App : Application
 	{

@@ -4,7 +4,7 @@ using System.Windows.Media;
 using System.Xml.Linq;
 using WpfDockManager;
 
-namespace SwampDbg.Controls
+namespace TestApplication.Controls
 {
 	/// <summary>
 	/// Interaction logic for TestControl.xaml

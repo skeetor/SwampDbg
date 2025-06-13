@@ -1,0 +1,21 @@
+﻿<Application x:Class="TestApplication.App"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="clr-namespace:TestApplication"
+	xmlns:Custom="clr-namespace:TestApplication"
+	DispatcherUnhandledException="ApplicationUnhandledException"
+	Startup="ApplicationStartup">
+
+	<Application.Resources>
+		<Image x:Key="ArrowBlueLeftActive" Source="/TestApplication;component/Images/Icons/ArrowBlueLeftActive.png" />
+		<Image x:Key="ArrowBlueLeftInactive" Source="/TestApplication;component/Images/Icons/ArrowBlueLeftInactive.png" />
+		<Image x:Key="ArrowBlueRightActive" Source="/TestApplication;component/Images/Icons/ArrowBlueRightActive.png" />
+		<Image x:Key="ArrowBlueRightInactive" Source="/TestApplication;component/Images/Icons/ArrowBlueRightInactive.png" />
+		<Image x:Key="Browse" Source="/TestApplication;component/Images/Icons/Browse.png" />
+		<Image x:Key="File" Source="/TestApplication;component/Images/Icons/File.png" />
+		<Image x:Key="Folder" Source="/TestApplication;component/Images/Icons/Folder.png" />
+		<Image x:Key="Refresh" Source="/TestApplication;component/Images/Icons/Refresh.png" />
+		<Image x:Key="Lock" Source="/TestApplication;component/Images/Icons/Lock.png" />
+		<Image x:Key="Unlock" Source="/TestApplication;component/Images/Icons/Unlock.png" />
+	</Application.Resources>
+</Application>
