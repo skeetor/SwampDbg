@@ -47,6 +47,18 @@
 					<Button Content="{StaticResource ArrowBlueLeftActive}" Width="24" Height="24"/>
 					<Button Content="{StaticResource ArrowBlueRightActive}" Width="24" Height="24"/>
 				</ToolBar>
+				<ToolBar>
+					<Button Width="70" Click="OnAddRootDocking">Add Root</Button>
+					<Label Width="5"></Label>
+					<ComboBox Name="_cmbRootDirection" Width="80" SelectedValuePath="Content">
+						<ComboBoxItem IsSelected="True">Top</ComboBoxItem>
+						<ComboBoxItem>Left</ComboBoxItem>
+						<ComboBoxItem>Right</ComboBoxItem>
+						<ComboBoxItem>Bottom</ComboBoxItem>
+						<ComboBoxItem>Center</ComboBoxItem>
+						<ComboBoxItem>Floating</ComboBoxItem>
+					</ComboBox>
+				</ToolBar>
 			</ToolBarTray>
 		</StackPanel>
 
@@ -75,11 +87,14 @@
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="TabText4"
 				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
-			<Button
+			<uc:TestControl
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
-				DMNS:DockingPanel.Dock="Top"
-				DMNS:DockingPanel.DockTitle="SecondLeftButton3">MyButtonTextLeft3</Button>
+				DMNS:DockingPanel.Dock="Bottom"
+				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
 			<!--
+			<uc:TestControl
+				DMNS:DockingPanel.Dock="Top"
+				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
 			<Button
 				DMNS:DockingPanel.DockAnchor="PropertyGroup"
 				DMNS:DockingPanel.DockTarget="BrowserGroupAnchor"

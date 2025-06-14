@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using WpfDockManager;
+using TestApplication.Controls;
 
 namespace TestApplication
 {
@@ -44,6 +45,16 @@ namespace TestApplication
 		private void OnOpenProject(object sender, RoutedEventArgs e)
 		{
 			MessageBox.Show("OnOpenProject");
+		}
+
+		private void OnAddRootDocking(object sender, RoutedEventArgs e)
+		{
+			var targetName = _cmbRootDirection.SelectedValue.ToString()!;
+			var dock = TestControl.TypeNames[targetName];
+			var dockPanel = GetDockingPanel();
+
+			var element = TestControl.CreateInstance();
+			dockPanel.DockElement(element, dock, target: null);
 		}
 	}
 }

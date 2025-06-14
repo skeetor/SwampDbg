@@ -596,28 +596,52 @@ namespace WpfDockManager
 		protected void Split(FrameworkElement element, bool before, DockingSplitter.Alignment axis, TabControl? target = null)
 		{
 			DockingSplitter? parent;
+			int index;
 
 			if (target == null)
-				throw new InvalidOperationException("Target may not be null");
+				parent = ReplaceRootSplitter(before, axis, out index);
+			else
+			{
+				parent = VisualTreeHelper.GetParent(target) as DockingSplitter;
+				if (parent == null)
+					throw new InvalidOperationException("DockingGrid is not a parent for target '"+GetDockTarget(target)+"'");
 
-			parent = VisualTreeHelper.GetParent(target) as DockingSplitter;
-			if (parent == null)
-				throw new InvalidOperationException("DockingGrid is not a parent for target '"+GetDockTarget(target)+"'");
+				index = parent.GetIndex(target);
+				if (index == -1 && before)
+					index = 0;
+				else if (!before && target != null)
+					index++;
 
-			var index = parent.GetIndex(target);
-			if (index == -1 && before)
-				index = 0;
-			else if (!before && target != null)
-				index++;
-
-			if (parent.Aligned != axis)
-				parent = ReplaceWithSplitter(axis, parent, target!, before, out index);
+				if (parent.Aligned != axis)
+					parent = ReplaceWithSplitter(axis, parent, target!, before, out index);
+			}
 
 			// When we are splitting, the item will always need a new TabControl
 			var tabControl = CreateTabElement(element, tabControl: null);
 			parent.Insert(tabControl, index);
 
 			UpdateLength(element, parent, tabControl);
+		}
+
+		protected DockingSplitter ReplaceRootSplitter(bool before, DockingSplitter.Alignment axis, out int index)
+		{
+			index = 0;
+			var parent = _root;
+
+			if (parent.Aligned != axis)
+			{
+				parent = new DockingSplitter();
+				parent.Aligned = axis;
+				DockingHelper.RemoveElementFromItsParent(_root);
+				parent.Add(_root);
+				_root = parent;
+			}
+
+			if (before)
+				return parent;
+
+			index = -1;
+			return parent;
 		}
 
 		protected DockingSplitter ReplaceWithSplitter(DockingSplitter.Alignment axis, DockingSplitter parentSplitter, TabControl target, bool before, out int index)

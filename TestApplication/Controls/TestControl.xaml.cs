@@ -1,7 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Xml.Linq;
 using WpfDockManager;
 
 namespace TestApplication.Controls
@@ -13,7 +11,7 @@ namespace TestApplication.Controls
 	{
 		private static int InstanceCounter = 0;
 
-		private static Dictionary<string, WpfDockManager.DockType> TypeNames =
+		public static Dictionary<string, WpfDockManager.DockType> TypeNames =
 			new Dictionary<string, WpfDockManager.DockType>()
 			{
 				[nameof(WpfDockManager.DockType.Top)] = WpfDockManager.DockType.Top,
@@ -29,7 +27,6 @@ namespace TestApplication.Controls
 			InitializeComponent();
 
 			InstanceCounter++;
-			SetText("New Instance: "+InstanceCounter.ToString());
 		}
 
 		private DockingPanel GetDockingPanel()
@@ -53,6 +50,15 @@ namespace TestApplication.Controls
 			HandleDocking(false);
 		}
 
+		public static TestControl CreateInstance()
+		{
+			var element = new TestControl();
+			element.SetText("Instance: " + InstanceCounter.ToString());
+			DockingPanel.SetDockTitle(element, "Instance: "+InstanceCounter.ToString());
+
+			return element;
+		}
+
 		private void HandleDocking(bool add)
 		{
 			var targetName = _ComboBoxCtrl.SelectedValue.ToString()!;
@@ -62,15 +68,10 @@ namespace TestApplication.Controls
 			if (add)
 			{
 				TabControl? target = null;
-				var splitter = DockingPanel.FindAssociatedContainers(this, out target);
+				DockingPanel.FindAssociatedContainers(this, out target);
 
-				if (splitter != null)
-				{
-					var element = new TestControl();
-					element.SetText("Instance: " + InstanceCounter.ToString());
-					DockingPanel.SetDockTitle(element, "Instance: "+InstanceCounter.ToString());
-					dockPanel.DockElement(element, dock, target);
-				}
+				var element = TestControl.CreateInstance();
+				dockPanel.DockElement(element, dock, target);
 			}
 			else
 				dockPanel.UndockElement(this);
