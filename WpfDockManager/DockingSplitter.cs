@@ -17,8 +17,8 @@ namespace WpfDockManager
 	{
 		public enum Alignment
 		{
-			Horizontal,
-			Vertical
+			Horizontal = 1,
+			Vertical = 2
 		}
 
 		public const int DefaultHandleWidth = 4;

@@ -67,9 +67,7 @@
 				If it is provided it is ignored.
 				DockTitle is the title that should appear on the tab item header.
 				DockAnchor: All items with the same name will be added to the same TabControl.
-					If no DockAnchor is specified the item is added to the root. The TabControl which contains
-					a named item will have a DockAnchor property set with "<name>Anchor" so it can serve as a
-					target as well.
+					If no DockAnchor is specified the item is added to the root.
 			-->
 			<uc:TestControl
 				DMNS:DockingPanel.DockAnchor="BrowserGroup"
@@ -91,23 +89,21 @@
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.Dock="Bottom"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
+
+			<uc:TestControl
+				DMNS:DockingPanel.DockTarget="BrowserGroup"
+				DMNS:DockingPanel.DockTitle="AdditionalTab"></uc:TestControl>
+
+			<!-- No target specified, so it is at the DockingPanel border -->
 			<uc:TestControl
 				DMNS:DockingPanel.Dock="Bottom"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
+
 			<!--
-			<Button
-				DMNS:DockingPanel.DockAnchor="PropertyGroup"
-				DMNS:DockingPanel.DockTarget="BrowserGroupAnchor"
-				DMNS:DockingPanel.DockTitle="PropertyTab"
-				DMNS:DockingPanel.Dock="Left">MyButtonTextRight</Button>
-			<Button
-				DMNS:DockingPanel.DockTarget="BrowserGroupAnchor"
-				DMNS:DockingPanel.DockTitle="CenterTab"
-				DMNS:DockingPanel.Dock="Right">CenterText</Button>
-			<Button DMNS:DockingPanel.Dock="Top">MyButtonTextTop</Button>
-			<Button DMNS:DockingPanel.Dock="Bottom">MyButtonTextBottom</Button>
-			<Button DMNS:DockingPanel.DockName="DocumentGroup">MyButtonTextCenter1</Button>
-			<Button DMNS:DockingPanel.DockTarget="DocumentGroup">MyButtonTextCenter2</Button>
+			<uc:TestControl
+				DMNS:DockingPanel.FloatingRectangle="1000,10,200,100"
+				DMNS:DockingPanel.DockFloating="Vertical"
+				DMNS:DockingPanel.DockTitle="Floating"></uc:TestControl>
 			-->
 		</DMNS:DockingPanel>
 

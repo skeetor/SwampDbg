@@ -18,7 +18,6 @@ namespace TestApplication.Controls
 				[nameof(WpfDockManager.DockType.Bottom)] = WpfDockManager.DockType.Bottom,
 				[nameof(WpfDockManager.DockType.Left)] = WpfDockManager.DockType.Left,
 				[nameof(WpfDockManager.DockType.Right)] = WpfDockManager.DockType.Right,
-				[nameof(WpfDockManager.DockType.Floating)] = WpfDockManager.DockType.Floating,
 				["Center"] = WpfDockManager.DockType.None
 			};
 
@@ -62,8 +61,16 @@ namespace TestApplication.Controls
 		private void HandleDocking(bool add)
 		{
 			var targetName = _ComboBoxCtrl.SelectedValue.ToString()!;
-			var dock = TypeNames[targetName];
 			var dockPanel = GetDockingPanel();
+
+			if (targetName == "Floating")
+			{
+				var element = TestControl.CreateInstance();
+				dockPanel.DockingFloat(element, DockType.None);
+				return;
+			}
+
+			var dock = TypeNames[targetName];
 
 			if (add)
 			{

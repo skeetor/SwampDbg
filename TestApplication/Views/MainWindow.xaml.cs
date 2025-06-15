@@ -50,8 +50,15 @@ namespace TestApplication
 		private void OnAddRootDocking(object sender, RoutedEventArgs e)
 		{
 			var targetName = _cmbRootDirection.SelectedValue.ToString()!;
-			var dock = TestControl.TypeNames[targetName];
 			var dockPanel = GetDockingPanel();
+
+			if (targetName == "Floating")
+			{
+				dockPanel.DockingFloat(TestControl.CreateInstance(), DockType.None);
+				return;
+			}
+		
+			var dock = TestControl.TypeNames[targetName];
 
 			var element = TestControl.CreateInstance();
 			dockPanel.DockElement(element, dock, target: null);

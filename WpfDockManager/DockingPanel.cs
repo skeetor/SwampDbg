@@ -1,9 +1,7 @@
-﻿using System;
-using System.Data.Common;
+﻿using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using LayoutItemList = WpfDockManager.UniqueList<WpfDockManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
 namespace WpfDockManager
@@ -44,8 +42,7 @@ namespace WpfDockManager
 		Left,
 		Top,
 		Right,
-		Bottom,
-		Floating
+		Bottom
 	}
 
 	public class DockingPanel : Panel
@@ -57,7 +54,7 @@ namespace WpfDockManager
 		private LayoutItemList? LayoutItems { get; set; }
 
 		private Dictionary<string, TabControl> DockGroups = new Dictionary<string, TabControl>();
-		private DockingSplitter _root = new();
+		private DockingSplitter RootSplitter = new();
 
 		#region Dock property
 		//public static readonly DependencyProperty DockProperty =
@@ -84,7 +81,6 @@ namespace WpfDockManager
 					|| dock == DockType.Top
 					|| dock == DockType.Right
 					|| dock == DockType.Bottom
-					|| dock == DockType.Floating
 					);
 		}
 
@@ -124,43 +120,9 @@ namespace WpfDockManager
 						typeof(string),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							"",
-							new PropertyChangedCallback(OnDockAnchorChanged)
+							""
 						)
 					);
-
-		private static void OnDockAnchorChanged(DependencyObject child, DependencyPropertyChangedEventArgs e)
-		{
-			//var parent = DockingHelper.FindParentClass<DockingPanel>(child);
-			//if (parent == null)
-			//	return;
-
-			//var newGroup = (e.NewValue as string)!;
-			//var tabCtrl = parent.FindAnchor(newGroup);
-
-			//// If we already have a tab for this group we don't need to do anything.
-			//if (tabCtrl == null)
-			//{
-			//	if (newGroup.Length > 0)
-			//	{
-			//		tabCtrl = new TabControl();
-			//		var tabGroup = newGroup + "Anchor";
-
-			//		parent.DockGroups[tabGroup] = tabCtrl;
-			//		SetDockAnchor(tabCtrl, tabGroup);
-			//	}
-			//}
-
-			//var oldGroup = (e.OldValue as string)!;
-			//if (oldGroup.Length == 0)
-			//	return;
-
-			//tabCtrl = parent.FindAnchor(oldGroup);
-			//if (tabCtrl == null)
-			//	return;
-
-			//parent.DockGroups.Remove(oldGroup);
-		}
 
 		public static string GetDockAnchor(UIElement element)
 		{
@@ -281,9 +243,63 @@ namespace WpfDockManager
 		public static void SetDockLength(UIElement element, int value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			element.SetValue(DockTitleProperty, value);
+			element.SetValue(DockLengthProperty, value);
 		}
 		#endregion DockLength property
+		#region DockFloating property
+		public static readonly DependencyProperty DockFloatingProperty =
+				DependencyProperty.RegisterAttached(
+						"DockFloating",
+						typeof(DockingSplitter.Alignment),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							(DockingSplitter.Alignment)0
+
+							),
+						new ValidateValueCallback(IsValidDockFloating)
+					);
+
+		internal static bool IsValidDockFloating(object o)
+		{
+			DockingSplitter.Alignment alignment = (DockingSplitter.Alignment)o;
+			return (alignment is 0 or DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal);
+		}
+
+		public static DockingSplitter.Alignment GetDockFloating(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (DockingSplitter.Alignment)element.GetValue(DockFloatingProperty);
+		}
+
+		public static void SetDockFloating(UIElement element, DockingSplitter.Alignment value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(DockFloatingProperty, value);
+		}
+		#endregion DockFloating property
+		#region FloatingRectangle property
+		public static readonly DependencyProperty FloatingRectangleProperty =
+				DependencyProperty.RegisterAttached(
+						"FloatingRectangle",
+						typeof(Rect),
+						typeof(DockingPanel),
+						new FrameworkPropertyMetadata(
+							default(Rect)
+							)
+					);
+
+		public static Rect GetFloatingRectangle(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (Rect)element.GetValue(FloatingRectangleProperty);
+		}
+
+		public static void SetFloatingRectangle(UIElement element, Rect value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(FloatingRectangleProperty, value);
+		}
+		#endregion FloatingRectangle property
 
 		public DockingPanel()
 			: base()
@@ -291,8 +307,8 @@ namespace WpfDockManager
 			LayoutItems = new LayoutItemList();
 			Loaded += OnLoadedEvent;
 
-			_root.Aligned = DockingSplitter.Alignment.Vertical;
-			Children.Add(_root);
+			RootSplitter.Aligned = DockingSplitter.Alignment.Vertical;
+			Children.Add(RootSplitter);
 		}
 
 		private void OnLoadedEvent(object? sender, EventArgs e)
@@ -308,7 +324,7 @@ namespace WpfDockManager
 			InitLayout(items);
 		}
 
-		public bool IsEmpty() => _root.IsEmpty();
+		public bool IsEmpty() => RootSplitter.IsEmpty();
 
 		private void Refresh(UIElement child)
 		{
@@ -325,14 +341,14 @@ namespace WpfDockManager
 
 		protected override Size MeasureOverride(Size availableSize)
 		{
-			_root.Measure(availableSize);
+			RootSplitter.Measure(availableSize);
 
-			return _root.DesiredSize;
+			return RootSplitter.DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Size finalSize)
 		{
-			_root.Arrange(new Rect(new Point(0, 0), finalSize));
+			RootSplitter.Arrange(new Rect(new Point(0, 0), finalSize));
 
 			return finalSize;
 		}
@@ -340,7 +356,7 @@ namespace WpfDockManager
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
 			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
-			if (LayoutItems == null || visualAdded == _root)
+			if (LayoutItems == null || visualAdded == RootSplitter)
 				return;
 
 			UIElement? child = visualAdded as UIElement;
@@ -357,7 +373,6 @@ namespace WpfDockManager
 					LayoutItems += visualAdded;
 					return;
 				}
-				//DockElement(child);
 			}
 
 			child = visualRemoved as UIElement;
@@ -365,9 +380,7 @@ namespace WpfDockManager
 			{
 				LayoutItems -= visualRemoved;
 				return;
-				//UndockElement(child);
 			}
-			//InvalidateMeasure();
 		}
 
 		private static void ResetProperties(UIElement? element)
@@ -424,7 +437,14 @@ namespace WpfDockManager
 				var dock = GetDock(element);
 				var index = GetDockIndex(element);
 
-				DockElement(element, dock, target, index, batchDock: true);
+				var floating = GetDockFloating(element);
+				if (floating is DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal)
+				{
+					var rect = GetFloatingRectangle(element);
+					DockingFloat(element, dock, target, index, true, rect);
+				}
+				else
+					DockElement(element, dock, target, index);
 
 				// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
 				//ResetProperties(element);
@@ -436,7 +456,7 @@ namespace WpfDockManager
 			//int[] cols = { 100, 500, 20 };
 			//for (int i = 0; i < cols.Length; i++)
 			//	_root.SetLength(i * 2, cols[i]);
-			_root.DumpGrid();
+			RootSplitter.DumpGrid();
 
 			InvalidateMeasure();
 		}
@@ -456,10 +476,7 @@ namespace WpfDockManager
 				tabControl = new TabControl();
 				var nm = GetDockAnchor(element);
 				if (nm.Length > 0)
-				{
 					DockGroups[nm] = tabControl;
-					SetDockAnchor(element, nm+"Anchor");
-				}
 			}
 
 			var title = GetDockTitle(element);
@@ -479,7 +496,7 @@ namespace WpfDockManager
 			return tabControl;
 		}
 
-		public void DockElement(UIElement element, DockType dock, UIElement? target = null, int index = -1, bool batchDock = false)
+		public void DockElement(UIElement element, DockType dock, UIElement? target = null, int index = -1)
 		{
 			if (element == target)
 				throw new ArgumentException("Can not dock an element on itself!");
@@ -491,12 +508,11 @@ namespace WpfDockManager
 			if (IsEmpty())
 			{
 				if (dock is DockType.Top or DockType.Bottom)
-					_root.Aligned = DockingSplitter.Alignment.Horizontal;
+					RootSplitter.Aligned = DockingSplitter.Alignment.Horizontal;
 				else if (dock is DockType.Left or DockType.Right)
-					_root.Aligned = DockingSplitter.Alignment.Vertical;
+					RootSplitter.Aligned = DockingSplitter.Alignment.Vertical;
 
-				if (dock != DockType.Floating)
-					dock = DockType.None;
+				dock = DockType.None;
 			}
 
 			switch (dock)
@@ -508,12 +524,12 @@ namespace WpfDockManager
 					if (target == null)
 					{
 						if (!IsEmpty())
-							target = _root.GetChild(0);
+							target = RootSplitter.GetChild(0);
 					}
 
 					var tabControl = CreateTabElement(item, tabControl: target as TabControl, index: index);
 					if (IsEmpty())
-						_root.Add(tabControl);
+						RootSplitter.Add(tabControl);
 
 					UpdateLength(item, VisualTreeHelper.GetParent(tabControl) as DockingSplitter, tabControl);
 				}
@@ -562,18 +578,9 @@ namespace WpfDockManager
 				}
 				break;
 
-				case DockType.Floating:
-				{
-					throw new NotImplementedException("Floating not yet implemented");
-				}
-				break;
-
 				default:
 					throw new InvalidOperationException("Undefined docking position: "+dock.ToString());
 			}
-
-			if (!batchDock)
-				InvalidateMeasure();
 		}
 
 		protected void UpdateLength(UIElement element, DockingSplitter? parent, TabControl tabControl)
@@ -626,15 +633,15 @@ namespace WpfDockManager
 		protected DockingSplitter ReplaceRootSplitter(bool before, DockingSplitter.Alignment axis, out int index)
 		{
 			index = 0;
-			var parent = _root;
+			var parent = RootSplitter;
 
 			if (parent.Aligned != axis)
 			{
 				parent = new DockingSplitter();
 				parent.Aligned = axis;
-				DockingHelper.RemoveElementFromItsParent(_root);
-				parent.Add(_root);
-				_root = parent;
+				DockingHelper.RemoveElementFromItsParent(RootSplitter);
+				parent.Add(RootSplitter);
+				RootSplitter = parent;
 				Children.Add(parent);
 			}
 
@@ -667,7 +674,7 @@ namespace WpfDockManager
 
 		public void UndockElement(UIElement? element)
 		{
-			if (element == _root)
+			if (element == RootSplitter)
 				return;
 
 			FrameworkElement removeElement = (element as FrameworkElement)!;
@@ -717,6 +724,28 @@ namespace WpfDockManager
 				var parent = VisualTreeHelper.GetParent(splitter);
 				UndockElement(splitter);
 			}
+		}
+
+		public FloatingWindow DockingFloat(UIElement element, DockType dock, UIElement? target = null, int index = -1
+			, bool show = true, Rect position = default(Rect))
+		{
+			var floating = new FloatingWindow();
+			var dockingPanel = floating.RootDockPanel;
+
+			dockingPanel.DockElement(element, dock, target, index);
+
+			if (!position.Equals(default(Rect)))
+			{
+				floating.Left = position.Left;
+				floating.Top = position.Top;
+				floating.Width = position.Width;
+				floating.Height = position.Height;
+			}
+
+			if (show)
+				floating.Show();
+
+			return floating;
 		}
 
 		/// <summary>
