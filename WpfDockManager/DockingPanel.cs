@@ -494,10 +494,9 @@ namespace WpfDockManager
 					_root.Aligned = DockingSplitter.Alignment.Horizontal;
 				else if (dock is DockType.Left or DockType.Right)
 					_root.Aligned = DockingSplitter.Alignment.Vertical;
-				else if (dock == DockType.Floating)
-					throw new NotImplementedException("Floating not yet implmented");
 
-				dock = DockType.None;
+				if (dock != DockType.Floating)
+					dock = DockType.None;
 			}
 
 			switch (dock)
@@ -565,6 +564,7 @@ namespace WpfDockManager
 
 				case DockType.Floating:
 				{
+					throw new NotImplementedException("Floating not yet implemented");
 				}
 				break;
 
@@ -635,6 +635,7 @@ namespace WpfDockManager
 				DockingHelper.RemoveElementFromItsParent(_root);
 				parent.Add(_root);
 				_root = parent;
+				Children.Add(parent);
 			}
 
 			if (before)
@@ -666,24 +667,67 @@ namespace WpfDockManager
 
 		public void UndockElement(UIElement? element)
 		{
-			if (element == null)
+			if (element == _root)
 				return;
 
-			throw new NotImplementedException("Undocking not yet implemented");
-			//InvalidateMeasure();
+			FrameworkElement removeElement = (element as FrameworkElement)!;
+			if (removeElement == null)
+				return;
+
+			FrameworkElement? dockingChild = element as TabControl;
+			DockingSplitter? splitter = null;
+
+			if (dockingChild != null)
+			{
+				// If the element is not connected to any parent we are done.
+				var p = VisualTreeHelper.GetParent(dockingChild);
+				if (p == null)
+					return;
+
+				splitter = p as DockingSplitter;
+			}
+
+			if (splitter == null)
+				splitter = FindAssociatedContainers(removeElement, out dockingChild);
+
+			if (splitter == null || dockingChild == null)
+				throw new InvalidOperationException("No docking parent found");
+
+			// If the whole element should be removed we are done
+			if (dockingChild != element)
+			{
+				bool remove = false;
+				if (dockingChild is TabControl tab && tab.Items.Count <= 1)
+					remove = true;
+				// If the last item is remove, we also remove the TabControl
+				else if (dockingChild is DockingSplitter s&& s.IsEmpty())
+					remove = true;
+
+				// TODO: Client code should be able to veto this as it might choose to keep the FrameworkElement in place.
+				if (remove)
+					removeElement = dockingChild;
+			}
+
+			if (removeElement != null)
+				splitter.Remove(removeElement);
+
+			if (splitter.IsEmpty())
+			{
+				// TODO: Client code should be able to veto this as it might choose to keep the TabControl in place.
+				var parent = VisualTreeHelper.GetParent(splitter);
+				UndockElement(splitter);
+			}
 		}
 
 		/// <summary>
-		/// Find the parent DockingSplitter and the TabControl which is directly associated to the splitter.
-		/// If a TabControl is encountered which is not a direct child of a splitter, it is ignored. The
-		/// TabControl may be null even if the splitter is not, as the splitter may be empty.
+		/// Find the parent DockingSplitter and the FrameworkElement which is directly associated to the splitter.
 		/// </summary>
 		/// <param name="element"></param>
-		/// <param name="tabControl"></param>
+		/// <param name="dockingChild"></param>
 		/// <returns></returns>
-		public static DockingSplitter? FindAssociatedContainers(UIElement? element, out TabControl? tabControl)
+		public static DockingSplitter? FindAssociatedContainers(UIElement? element, out FrameworkElement? dockingChild)
 		{
-			tabControl = null;
+			dockingChild = null;
 			if (element == null)
 				return null;
 
@@ -692,14 +736,12 @@ namespace WpfDockManager
 				return null;
 
 			DockingSplitter? splitter = parent as DockingSplitter;
-			TabControl? tab = element as TabControl;
-			if (tab != null)
-				tabControl = tab;
+			dockingChild = element as FrameworkElement;
 
 			if (splitter != null)
 				return splitter;
 
-			return FindAssociatedContainers(parent, out tabControl);
+			return FindAssociatedContainers(parent, out dockingChild);
 		}
 
 		private static TabControl? FindParentTabControl(DependencyObject element)

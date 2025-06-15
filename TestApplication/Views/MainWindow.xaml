@@ -91,10 +91,10 @@
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.Dock="Bottom"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
-			<!--
 			<uc:TestControl
-				DMNS:DockingPanel.Dock="Top"
+				DMNS:DockingPanel.Dock="Bottom"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
+			<!--
 			<Button
 				DMNS:DockingPanel.DockAnchor="PropertyGroup"
 				DMNS:DockingPanel.DockTarget="BrowserGroupAnchor"

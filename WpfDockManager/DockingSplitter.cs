@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Xml.Linq;
 
 namespace WpfDockManager
 {
@@ -157,7 +158,7 @@ namespace WpfDockManager
 			{
 				if (splitter)
 				{
-					MoveChildrenPosition(index, 2);
+					MoveChildGridPosition(index, 2);
 					InsertSplitter(index, 1);
 				}
 
@@ -168,7 +169,13 @@ namespace WpfDockManager
 			SetIndex(element, index);
 		}
 
-		private void MoveChildrenPosition(int from, int offset)
+		/// <summary>
+		/// When a child has been inserted or removed all childs after this have to
+		/// be adjusted accordingly so they are in the correct row/column again.
+		/// </summary>
+		/// <param name="from"></param>
+		/// <param name="offset"></param>
+		private void MoveChildGridPosition(int from, int offset)
 		{
 			if (offset == 0)
 				return;
@@ -262,8 +269,10 @@ namespace WpfDockManager
 
 		public void SetLength(int index, int length)
 		{
-			if (index < 0 || index >= Children.Count)
-				throw new IndexOutOfRangeException("Index "+index.ToString()+"/"+ Children.Count.ToString());
+			throw new NotImplementedException("SetLength not implemented");
+
+			//if (index < 0 || index >= Children.Count)
+			//	throw new IndexOutOfRangeException("Index "+index.ToString()+"/"+ Children.Count.ToString());
 
 			// The last element will never be changed, because the splitter should use up the remaining available space.
 			//if (index == Children.Count-1)
@@ -284,6 +293,67 @@ namespace WpfDockManager
 
 			//var splitter = Children[index] as GridSplitter;
 			//MoveSplitter(splitter, length);
+		}
+
+		public int Remove(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+
+			int index = GetIndex(element);
+			if (index == -1)
+				throw new InvalidOperationException("Element is not a member of this DockingSplitter");
+
+			RemoveItem(index);
+
+			return index;
+		}
+
+		public UIElement? RemoveAt(int index)
+		{
+			var child = GetChild(index);
+			if (child is GridSplitter)
+				return null;
+
+			RemoveItem(index);
+
+			return child;
+		}
+
+		/// <summary>
+		/// Removes the item with the specified index and the splitter before it.
+		/// Returns true if a splitter was also removed.
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		protected bool RemoveItem(int index)
+		{
+			Children.RemoveAt(index);
+
+			if (Aligned == Alignment.Vertical)
+				ColumnDefinitions.RemoveAt(index);
+			else
+				RowDefinitions.RemoveAt(index);
+
+			MoveChildGridPosition(index, -1);
+
+			if (Children.Count == 0)
+				return false;
+
+			if (index >= Children.Count)
+				index = Children.Count-1;
+
+			if (GetChild(index) is not GridSplitter)
+				return false;
+
+			Children.RemoveAt(index);
+			if (Aligned == Alignment.Vertical)
+				ColumnDefinitions.RemoveAt(index);
+			else
+				RowDefinitions.RemoveAt(index);
+
+			MoveChildGridPosition(index, -1);
+
+			return true;
 		}
 
 		public void DumpGrid()

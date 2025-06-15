@@ -67,7 +67,7 @@ namespace TestApplication.Controls
 
 			if (add)
 			{
-				TabControl? target = null;
+				FrameworkElement? target = null;
 				DockingPanel.FindAssociatedContainers(this, out target);
 
 				var element = TestControl.CreateInstance();
