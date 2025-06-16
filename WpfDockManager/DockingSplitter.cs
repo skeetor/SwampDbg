@@ -356,36 +356,43 @@ namespace WpfDockManager
 
 		protected override Size ArrangeOverride(Size arrangeSize)
 		{
-			Debug.WriteLine("Before:");
-			if (Children.Count > 0)
-			{
-				for (int i = 0; i < Children.Count; i++)
-				{
-					var child = (Children[i] as FrameworkElement)!;
-					var w = child.ActualWidth;
-					Debug.WriteLine("Length (C): " + w.ToString());
-				}
-			}
-
+			// After SetLength was called, the grid is updated, so we check if there
+			// are any columns with a Star in between and update them to their calculated
+			// length. The last item will always get the Star setting, so it fills the whole
+			// client area. If this is not done, we will end up with splitters moving the
+			// left and right columns, which we dont want.
+			// I found no better way to achieve this, because there is no way to reposition
+			// a splitter by code. :(
 			var rc = base.ArrangeOverride(arrangeSize);
+			bool update = false;
 
-			Debug.WriteLine("After:");
-			if (Children.Count > 0)
+			for (int i = 0; i < ColumnDefinitions.Count; i++)
 			{
-				for (int i = 0; i < Children.Count; i++)
+				// Here the items are already set to their required length as
+				// determined by the splitters, so can replace any Star in between
+				// with this length to prevent the splitter from dragging both
+				// sides.
+				if (i >= Children.Count)
+					break;
+
+				var w = (Children[i] as FrameworkElement)!.ActualWidth;
+				var col = ColumnDefinitions[i].Width;
+
+				if (col.IsStar && i != Children.Count-1)
 				{
-					var child = (Children[i] as FrameworkElement)!;
-					var w = child.ActualWidth;
-					Debug.WriteLine("Length (C): " + w.ToString());
+					col = new GridLength(w);
+					ColumnDefinitions[i].Width = col;
+					update = true;
 				}
 			}
 
-			return rc;
-		}
+			// The last item in the grid should always take up the remaining area.
+			if (update)
+			{
+				var index = ColumnDefinitions.Count - 1;
+				ColumnDefinitions[index].Width = new GridLength(1, GridUnitType.Star);
+			}
 
-		protected override Size MeasureOverride(Size constraint)
-		{
-			var rc = base.MeasureOverride(constraint);
 			return rc;
 		}
 
