@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using WpfDockManager;
 
@@ -7,18 +8,18 @@ namespace TestApplication.Controls
 	/// <summary>
 	/// Interaction logic for TestControl.xaml
 	/// </summary>
-	public partial class TestControl : UserControl
+	public partial class TestControl : UserControl, IDockingProvider
 	{
 		private static int InstanceCounter = 0;
 
-		public static Dictionary<string, WpfDockManager.DockType> TypeNames =
-			new Dictionary<string, WpfDockManager.DockType>()
+		public static Dictionary<string, DockPosition> TypeNames =
+			new Dictionary<string, DockPosition>()
 			{
-				[nameof(WpfDockManager.DockType.Top)] = WpfDockManager.DockType.Top,
-				[nameof(WpfDockManager.DockType.Bottom)] = WpfDockManager.DockType.Bottom,
-				[nameof(WpfDockManager.DockType.Left)] = WpfDockManager.DockType.Left,
-				[nameof(WpfDockManager.DockType.Right)] = WpfDockManager.DockType.Right,
-				["Center"] = WpfDockManager.DockType.None
+				[nameof(DockPosition.Top)] = DockPosition.Top,
+				[nameof(DockPosition.Bottom)] = DockPosition.Bottom,
+				[nameof(DockPosition.Left)] = DockPosition.Left,
+				[nameof(DockPosition.Right)] = DockPosition.Right,
+				["Center"] = DockPosition.None
 			};
 
 		public TestControl()
@@ -28,7 +29,7 @@ namespace TestApplication.Controls
 			InstanceCounter++;
 		}
 
-		private DockingPanel GetDockingPanel()
+		public IDockingPanel GetDockingPanel()
 		{
 			var mainWindow = (App.Current.MainWindow as MainWindow)!;
 			return mainWindow.GetDockingPanel();
@@ -66,7 +67,7 @@ namespace TestApplication.Controls
 			if (targetName == "Floating")
 			{
 				var element = TestControl.CreateInstance();
-				dockPanel.DockingFloat(element, DockType.None);
+				dockPanel.DockingFloat(element, DockPosition.None);
 				return;
 			}
 

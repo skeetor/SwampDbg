@@ -1,9 +1,7 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Xml.Linq;
 
 namespace WpfDockManager
 {
@@ -84,7 +82,7 @@ namespace WpfDockManager
 
 		public bool IsEmpty() => Children.Count == 0;
 
-		protected GridSplitter GetDefaultGridSplitter()
+		protected GridSplitter CreateDefaultGridSplitter()
 		{
 			var brush = Brushes.Black;
 
@@ -217,7 +215,7 @@ namespace WpfDockManager
 
 		protected void InsertSplitter(int index, int offset)
 		{
-			var gridSplitter = GetDefaultGridSplitter();
+			var gridSplitter = CreateDefaultGridSplitter();
 			if (Aligned == Alignment.Vertical)
 			{
 				var newSplitterColumn = new ColumnDefinition() { Width = new GridLength(DefaultHandleWidth + 1) };
@@ -267,32 +265,32 @@ namespace WpfDockManager
 			return index;
 		}
 
-		public void SetLength(int index, int length)
+		public void SetLength(int index, GridLength length)
 		{
-			throw new NotImplementedException("SetLength not implemented");
+			if (index == -1)
+				index = Children.Count - 1;
 
-			//if (index < 0 || index >= Children.Count)
-			//	throw new IndexOutOfRangeException("Index "+index.ToString()+"/"+ Children.Count.ToString());
+			if (index < 0 || index >= Children.Count)
+				throw new IndexOutOfRangeException("Index " + index.ToString() + "/" + Children.Count.ToString());
 
-			// The last element will never be changed, because the splitter should use up the remaining available space.
-			//if (index == Children.Count-1)
-			//	return;
+			if (Aligned == Alignment.Vertical)
+				ColumnDefinitions[index].Width = length;
+			else
+				RowDefinitions[index].Height = length;
+		}
 
-			//if (Aligned == Alignment.Vertical)
-			//	ColumnDefinitions[index].Width = new GridLength(length, GridUnitType.Pixel);
-			//else
-			//	RowDefinitions[index].Height = new GridLength(length, GridUnitType.Pixel);
+		public GridLength GetLength(int index)
+		{
+			if (index == -1)
+				index = Children.Count - 1;
 
-			//if (Children.Count <= 1)
-			//	return;
+			if (index < 0 || index >= Children.Count)
+				throw new IndexOutOfRangeException("Index "+index.ToString()+"/"+ Children.Count.ToString());
 
-			//if (index == Children.Count - 1)
-			//	index--;
-			//else
-			//	index++;
+			if (Aligned == Alignment.Vertical)
+				return ColumnDefinitions[index].Width;
 
-			//var splitter = Children[index] as GridSplitter;
-			//MoveSplitter(splitter, length);
+			return RowDefinitions[index].Height;
 		}
 
 		public int Remove(UIElement element)
@@ -354,6 +352,41 @@ namespace WpfDockManager
 			MoveChildGridPosition(index, -1);
 
 			return true;
+		}
+
+		protected override Size ArrangeOverride(Size arrangeSize)
+		{
+			Debug.WriteLine("Before:");
+			if (Children.Count > 0)
+			{
+				for (int i = 0; i < Children.Count; i++)
+				{
+					var child = (Children[i] as FrameworkElement)!;
+					var w = child.ActualWidth;
+					Debug.WriteLine("Length (C): " + w.ToString());
+				}
+			}
+
+			var rc = base.ArrangeOverride(arrangeSize);
+
+			Debug.WriteLine("After:");
+			if (Children.Count > 0)
+			{
+				for (int i = 0; i < Children.Count; i++)
+				{
+					var child = (Children[i] as FrameworkElement)!;
+					var w = child.ActualWidth;
+					Debug.WriteLine("Length (C): " + w.ToString());
+				}
+			}
+
+			return rc;
+		}
+
+		protected override Size MeasureOverride(Size constraint)
+		{
+			var rc = base.MeasureOverride(constraint);
+			return rc;
 		}
 
 		public void DumpGrid()

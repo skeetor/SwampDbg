@@ -1,5 +1,5 @@
-﻿using System.Data;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using LayoutItemList = WpfDockManager.UniqueList<WpfDockManager.Layout.LayoutItem, System.Windows.DependencyObject>;
@@ -36,16 +36,7 @@ namespace WpfDockManager
 	///
 	/// </summary>
 
-	public enum DockType
-	{
-		None,
-		Left,
-		Top,
-		Right,
-		Bottom
-	}
-
-	public class DockingPanel : Panel
+	public class DockingPanel : Panel, IDockingPanel
 	{
 		// When the class is instantiated we have to remember all items added to it
 		// so we can create the layout when all items are fully loaded. Properties
@@ -63,10 +54,10 @@ namespace WpfDockManager
 		public static readonly DependencyProperty DockProperty =
 				DependencyProperty.RegisterAttached(
 						"Dock",
-						typeof(DockType),
+						typeof(DockPosition),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							DockType.None,
+							DockPosition.None,
 							new PropertyChangedCallback(OnDockChanged)
 						),
 						new ValidateValueCallback(IsValidDock)
@@ -74,13 +65,13 @@ namespace WpfDockManager
 
 		internal static bool IsValidDock(object o)
 		{
-			DockType dock = (DockType)o;
+			DockPosition dock = (DockPosition)o;
 
-			return (dock == DockType.None
-					|| dock == DockType.Left
-					|| dock == DockType.Top
-					|| dock == DockType.Right
-					|| dock == DockType.Bottom
+			return (dock == DockPosition.None
+					|| dock == DockPosition.Left
+					|| dock == DockPosition.Top
+					|| dock == DockPosition.Right
+					|| dock == DockPosition.Bottom
 					);
 		}
 
@@ -90,8 +81,8 @@ namespace WpfDockManager
 			//if (child == null)
 			//	return;
 
-			//DockType dock = (DockType)e.OldValue;
-			//if ((DockType)e.OldValue == DockType.None && (DockType)e.NewValue != DockType.None)
+			//DockPosition dock = (DockPosition)e.OldValue;
+			//if ((DockPosition)e.OldValue == DockPosition.None && (DockPosition)e.NewValue != DockPosition.None)
 			//{
 			//	DockingPanel? p = VisualTreeHelper.GetParent(child) as DockingPanel;
 			//	if (p == null)
@@ -101,13 +92,13 @@ namespace WpfDockManager
 			//}
 		}
 
-		public static DockType GetDock(UIElement element)
+		public static DockPosition GetDock(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (DockType)element.GetValue(DockProperty);
+			return (DockPosition)element.GetValue(DockProperty);
 		}
 
-		public static void SetDock(UIElement element, DockType value)
+		public static void SetDock(UIElement element, DockPosition value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 			element.SetValue(DockProperty, value);
@@ -218,29 +209,20 @@ namespace WpfDockManager
 		public static readonly DependencyProperty DockLengthProperty =
 				DependencyProperty.RegisterAttached(
 						"DockLength",
-						typeof(int),
+						typeof(GridLength),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							-1
-							),
-						new ValidateValueCallback(IsValidDockLength)
+							new GridLength(-1, GridUnitType.Pixel)
+							)
 					);
 
-		internal static bool IsValidDockLength(object o)
-		{
-			// Length may be -1 for the default size of the control
-			// or the value may not be 0 or less.
-			int length = (int)o;
-			return (length == -1 || length > 0);
-		}
-
-		public static int GetDockLength(UIElement element)
+		public static GridLength GetDockLength(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (int)element.GetValue(DockLengthProperty);
+			return (GridLength)element.GetValue(DockLengthProperty);
 		}
 
-		public static void SetDockLength(UIElement element, int value)
+		public static void SetDockLength(UIElement element, GridLength value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 			element.SetValue(DockLengthProperty, value);
@@ -362,13 +344,13 @@ namespace WpfDockManager
 			UIElement? child = visualAdded as UIElement;
 			if (child != null)
 			{
-				DockType dock = GetDock(child);
+				DockPosition dock = GetDock(child);
 
-				// If an item has no Docktype yet, then the new item is a new instance and we have to remember it until the
+				// If an item has no DockPosition yet, then the new item is a new instance and we have to remember it until the
 				// class is fully loaded with all properties set. If an element is added or removed during runtime, because
 				// the user dragged it in a new position, then the Dock property must be specified to know where it should
 				// be docked to.
-				if (dock == DockType.None)
+				if (dock == DockPosition.None)
 				{
 					LayoutItems += visualAdded;
 					return;
@@ -456,7 +438,7 @@ namespace WpfDockManager
 			//int[] cols = { 100, 500, 20 };
 			//for (int i = 0; i < cols.Length; i++)
 			//	_root.SetLength(i * 2, cols[i]);
-			RootSplitter.DumpGrid();
+			//RootSplitter.DumpGrid();
 
 			InvalidateMeasure();
 		}
@@ -496,7 +478,7 @@ namespace WpfDockManager
 			return tabControl;
 		}
 
-		public void DockElement(UIElement element, DockType dock, UIElement? target = null, int index = -1)
+		public void DockElement(UIElement element, DockPosition dock, UIElement? target = null, int index = -1)
 		{
 			if (element == target)
 				throw new ArgumentException("Can not dock an element on itself!");
@@ -507,17 +489,17 @@ namespace WpfDockManager
 
 			if (IsEmpty())
 			{
-				if (dock is DockType.Top or DockType.Bottom)
+				if (dock is DockPosition.Top or DockPosition.Bottom)
 					RootSplitter.Aligned = DockingSplitter.Alignment.Horizontal;
-				else if (dock is DockType.Left or DockType.Right)
+				else if (dock is DockPosition.Left or DockPosition.Right)
 					RootSplitter.Aligned = DockingSplitter.Alignment.Vertical;
 
-				dock = DockType.None;
+				dock = DockPosition.None;
 			}
 
 			switch (dock)
 			{
-				case DockType.None:
+				case DockPosition.None:
 				{
 					// If an element should be added to the center we need a target to add the item to.
 					// If the panel is empty, we can create a new tab automatically.
@@ -536,7 +518,7 @@ namespace WpfDockManager
 				break;
 
 				// Dock to left of target
-				case DockType.Left:
+				case DockPosition.Left:
 				{
 					var tabCtrl = target as TabControl;
 					if (tabCtrl == null && target != null)
@@ -547,7 +529,7 @@ namespace WpfDockManager
 				break;
 
 				// Dock to right of target
-				case DockType.Right:
+				case DockPosition.Right:
 				{
 					var tabCtrl = target as TabControl;
 
@@ -558,7 +540,7 @@ namespace WpfDockManager
 				}
 				break;
 
-				case DockType.Top:
+				case DockPosition.Top:
 				{
 					var tabCtrl = target as TabControl;
 					if (tabCtrl == null && target != null)
@@ -568,7 +550,7 @@ namespace WpfDockManager
 				}
 				break;
 
-				case DockType.Bottom:
+				case DockPosition.Bottom:
 				{
 					var tabCtrl = target as TabControl;
 					if (tabCtrl == null && target != null)
@@ -589,11 +571,12 @@ namespace WpfDockManager
 				return;
 
 			var length = GetDockLength(element);
-			if (length == -1)
-				return;
 
-			var pos = parent.GetIndex(tabControl);
-			parent.SetLength(pos, length);
+			if (length.Value != -1)
+			{
+				var pos = parent.GetIndex(tabControl);
+				parent.SetLength(pos, length);
+			}
 		}
 
 		protected void HorizontalSplit(FrameworkElement element, bool before, TabControl? target = null) => Split(element, before, DockingSplitter.Alignment.Horizontal, target);
@@ -726,8 +709,7 @@ namespace WpfDockManager
 			}
 		}
 
-		public FloatingWindow DockingFloat(UIElement element, DockType dock, UIElement? target = null, int index = -1
-			, bool show = true, Rect position = default(Rect))
+		public IDockingProvider DockingFloat(UIElement element, DockPosition dock, UIElement? target = null, int index = -1, bool show = true, Rect position = default(Rect))
 		{
 			var floating = new FloatingWindow();
 			var dockingPanel = floating.RootDockPanel;

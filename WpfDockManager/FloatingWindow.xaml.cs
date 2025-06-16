@@ -6,7 +6,7 @@ namespace WpfDockManager
 	/// <summary>
 	/// Interaction logic for FloatingWindow.xaml
 	/// </summary>
-	public partial class FloatingWindow : Window
+	public partial class FloatingWindow : Window, IDockingProvider
 	{
 		public DockingPanel RootDockPanel { get; private set; }
 
@@ -18,6 +18,11 @@ namespace WpfDockManager
 			RootDockPanel = panel;
 
 			DockingRootGrid.Children.Add(panel);
+		}
+
+		public IDockingPanel GetDockingPanel()
+		{
+			return RootDockPanel;
 		}
 
 		private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)

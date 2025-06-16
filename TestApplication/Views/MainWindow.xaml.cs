@@ -3,13 +3,14 @@ using System.Windows;
 using System.Windows.Controls;
 using WpfDockManager;
 using TestApplication.Controls;
+using System.Windows.Automation;
 
 namespace TestApplication
 {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window
+	public partial class MainWindow : Window, IDockingProvider
 	{
 		public MainWindow()
 		{
@@ -18,7 +19,7 @@ namespace TestApplication
 			UpdateFromConfig(generalConfig);
 		}
 
-		public DockingPanel GetDockingPanel()
+		public IDockingPanel GetDockingPanel()
 		{
 			return RootDockPanel;
 		}
@@ -54,7 +55,7 @@ namespace TestApplication
 
 			if (targetName == "Floating")
 			{
-				dockPanel.DockingFloat(TestControl.CreateInstance(), DockType.None);
+				dockPanel.DockingFloat(TestControl.CreateInstance(), DockPosition.None);
 				return;
 			}
 		

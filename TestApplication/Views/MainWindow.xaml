@@ -68,8 +68,10 @@
 				DockTitle is the title that should appear on the tab item header.
 				DockAnchor: All items with the same name will be added to the same TabControl.
 					If no DockAnchor is specified the item is added to the root.
+				DockLength: Accepts values from GridLength i.E. "1.0,*", "Auto", "100", etc.
 			-->
 			<uc:TestControl
+				DMNS:DockingPanel.DockLength="100"
 				DMNS:DockingPanel.DockAnchor="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="TabText1"
 				></uc:TestControl>
@@ -77,7 +79,8 @@
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="TabText2"
 				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
-			<uc:TestControl
+            <uc:TestControl
+				DMNS:DockingPanel.DockLength="500"
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="TabText3"
 				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
@@ -85,6 +88,7 @@
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="TabText4"
 				DMNS:DockingPanel.Dock="Right"></uc:TestControl>
+			<!--
 			<uc:TestControl
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.Dock="Bottom"
@@ -93,11 +97,14 @@
 			<uc:TestControl
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="AdditionalTab"></uc:TestControl>
-
+			-->
 			<!-- No target specified, so it is at the DockingPanel border -->
+			<!--
 			<uc:TestControl
+				DMNS:DockingPanel.DockLength="70"
 				DMNS:DockingPanel.Dock="Bottom"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
+			-->
 
 			<!--
 			<uc:TestControl
