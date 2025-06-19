@@ -13,14 +13,14 @@ namespace WpfDockingManager
 	/// Add this XmlNamespace attribute to the root element of the markup file where it is 
 	/// to be used:
 	///
-	///     xmlns:WpfDockManagerNS="clr-namespace:WpfDockManager"
+	///     xmlns:WpfDockingManagerNS="clr-namespace:WpfDockManager"
 	///
 	///
 	/// Step 1b) Using this custom control in a XAML file that exists in a different project.
 	/// Add this XmlNamespace attribute to the root element of the markup file where it is 
 	/// to be used:
 	///
-	///     xmlns:WpfDockManagerNS="clr-namespace:WpfDockManager;assembly=WpfDockManager"
+	///     xmlns:WpfDockingManagerNS="clr-namespace:WpfDockManager;assembly=WpfDockManager"
 	///
 	/// You will also need to add a project reference from the project where the XAML file lives
 	/// to this project and Rebuild to avoid compilation errors:
@@ -32,7 +32,7 @@ namespace WpfDockingManager
 	/// Step 2)
 	/// Go ahead and use your control in the XAML file.
 	///
-	///     <WpfDockManagerNS:DockingPanel/>
+	///     <WpfDockingManagerNS:DockingPanel/>
 	///
 	/// </summary>
 
