@@ -321,19 +321,19 @@ namespace WpfDockManager
 			InternalChildren.Add(child as UIElement);
 		}
 
-		protected override Size MeasureOverride(Size availableSize)
-		{
-			RootSplitter.Measure(availableSize);
+		//protected override Size MeasureOverride(Size availableSize)
+		//{
+		//	RootSplitter.Measure(availableSize);
 
-			return RootSplitter.DesiredSize;
-		}
+		//	return RootSplitter.DesiredSize;
+		//}
 
-		protected override Size ArrangeOverride(Size finalSize)
-		{
-			RootSplitter.Arrange(new Rect(new Point(0, 0), finalSize));
+		//protected override Size ArrangeOverride(Size finalSize)
+		//{
+		//	RootSplitter.Arrange(new Rect(new Point(0, 0), finalSize));
 
-			return finalSize;
-		}
+		//	return finalSize;
+		//}
 
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
