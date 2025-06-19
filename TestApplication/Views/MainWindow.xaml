@@ -63,6 +63,11 @@
 		</StackPanel>
 	
 		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
+			<DMNS:DockingGroup>
+				<TabItem Header="TestHeader">
+					<Button>Testbutton</Button>
+				</TabItem>
+			</DMNS:DockingGroup>
 			<!-- The first element doesn't need a dock position because the window is empty anyway and there is nothing we can dock to.
 				If it is provided it is ignored.
 				DockTitle is the title that should appear on the tab item header.
@@ -71,6 +76,7 @@
 					optional and only required if the item is to be targeted by another one.
 				DockLength: Accepts values from GridLength i.E. "1.0,*", "Auto", "100", etc.
 			-->
+			<!--
 			<uc:TestControl
 				DMNS:DockingPanel.DockLength="100"
 				DMNS:DockingPanel.DockAnchor="BrowserGroup"
@@ -97,12 +103,14 @@
 			<uc:TestControl
 				DMNS:DockingPanel.DockTarget="BrowserGroup"
 				DMNS:DockingPanel.DockTitle="AdditionalTab"></uc:TestControl>
-
+			-->
 			<!-- No target specified, so it is at the DockingPanel border -->
+			<!--
 			<uc:TestControl
 				DMNS:DockingPanel.DockLength="70"
 				DMNS:DockingPanel.Dock="Bottom"
 				DMNS:DockingPanel.DockTitle="SecondLeftButton3"></uc:TestControl>
+			-->
 
 			<!--
 			<uc:TestControl

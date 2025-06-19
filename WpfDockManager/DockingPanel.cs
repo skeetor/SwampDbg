@@ -286,24 +286,8 @@ namespace WpfDockingManager
 		public DockingPanel()
 			: base()
 		{
-			LayoutItems = new LayoutItemList();
-			Loaded += OnLoadedEvent;
-
 			RootSplitter.Aligned = DockingSplitter.Alignment.Vertical;
 			Children.Add(RootSplitter);
-		}
-
-		private void OnLoadedEvent(object? sender, EventArgs e)
-		{
-			if (LayoutItems == null)
-				return;
-
-			var items = LayoutItems;
-			// These items are only used during initialization. Once this is done
-			// We can no longer rely on the references anyway, as they might have been
-			// destroyed or moved, so we discard them.
-			LayoutItems = null;
-			InitLayout(items);
 		}
 
 		public bool IsEmpty() => RootSplitter.IsEmpty();
@@ -321,6 +305,62 @@ namespace WpfDockingManager
 			InternalChildren.Add(child as UIElement);
 		}
 
+		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
+		{
+			bool valid = false;
+
+			if (visualAdded is DockingSplitter)
+			{
+				valid = true;
+			}
+
+			if (visualAdded is DockingGroup)
+			{
+				valid = true;
+				AddItem((visualAdded as UIElement)!);
+			}
+
+			if (visualRemoved is DockingSplitter)
+			{
+				valid = true;
+			}
+			else if (visualRemoved is DockingGroup)
+			{
+				valid = true;
+			}
+
+			if (!valid)
+				throw new InvalidOperationException("DockingPanel only accepts DockingGroup as child.");
+
+			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
+		}
+
+		protected void AddItem(UIElement element)
+		{
+			if (element == null)
+				ArgumentNullException.ThrowIfNull(element);
+
+			var nm = GetDockTarget(element);
+			TabControl? target = FindAnchor(nm);
+
+			var dock = GetDock(element);
+			var index = GetDockIndex(element);
+
+			var floating = GetDockFloating(element);
+			if (floating is DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal)
+			{
+				var rect = GetFloatingRectangle(element);
+				DockingFloat(element, dock, target, index, true, rect);
+			}
+			else
+				DockElement(element, dock, target, index);
+
+			// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
+			//ResetProperties(element);
+		}
+
+		protected void RemoveItem(UIElement element) => UndockElement(element);
+
 		protected override Size MeasureOverride(Size availableSize)
 		{
 			RootSplitter.Measure(availableSize);
@@ -333,36 +373,6 @@ namespace WpfDockingManager
 			RootSplitter.Arrange(new Rect(new Point(0, 0), finalSize));
 
 			return finalSize;
-		}
-
-		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
-		{
-			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
-			if (LayoutItems == null || visualAdded == RootSplitter)
-				return;
-
-			UIElement? child = visualAdded as UIElement;
-			if (child != null)
-			{
-				DockPosition dock = GetDock(child);
-
-				// If an item has no DockPosition yet, then the new item is a new instance and we have to remember it until the
-				// class is fully loaded with all properties set. If an element is added or removed during runtime, because
-				// the user dragged it in a new position, then the Dock property must be specified to know where it should
-				// be docked to.
-				if (dock == DockPosition.None)
-				{
-					LayoutItems += visualAdded;
-					return;
-				}
-			}
-
-			child = visualRemoved as UIElement;
-			if (child != null)
-			{
-				LayoutItems -= visualRemoved;
-				return;
-			}
 		}
 
 		private static void ResetProperties(UIElement? element)
