@@ -61,9 +61,9 @@
 				</ToolBar>
 			</ToolBarTray>
 		</StackPanel>
-	
+
 		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
-			<DMNS:DockingGroup>
+			<DMNS:DockingGroup Height="30" TabPosition="Bottom">
 				<TabItem Header="TestHeader">
 					<Button>Testbutton</Button>
 				</TabItem>

@@ -44,7 +44,7 @@ namespace WpfDockingManager
 		// all properties.
 		private LayoutItemList? LayoutItems { get; set; }
 
-		private Dictionary<string, TabControl> DockGroups = new Dictionary<string, TabControl>();
+		private Dictionary<string, DockingGroup> DockGroups = new Dictionary<string, DockingGroup>();
 		private DockingSplitter RootSplitter = new();
 
 		#region Dock property
@@ -341,7 +341,7 @@ namespace WpfDockingManager
 				ArgumentNullException.ThrowIfNull(element);
 
 			var nm = GetDockTarget(element);
-			TabControl? target = FindAnchor(nm);
+			DockingGroup? target = FindAnchor(nm);
 
 			var dock = GetDock(element);
 			var index = GetDockIndex(element);
@@ -385,7 +385,7 @@ namespace WpfDockingManager
 			element.ClearValue(DockIndexProperty);
 		}
 
-		private TabControl? FindAnchor(string? group)
+		private DockingGroup? FindAnchor(string? group)
 		{
 			if (group == null || group.Length == 0)
 				return null;
@@ -424,7 +424,7 @@ namespace WpfDockingManager
 					continue;
 
 				var nm = GetDockTarget(element);
-				TabControl? target = FindAnchor(nm);
+				DockingGroup? target = FindAnchor(nm);
 
 				var dock = GetDock(element);
 				var index = GetDockIndex(element);
@@ -459,13 +459,13 @@ namespace WpfDockingManager
 		/// </summary>
 		/// <param name="element"></param>
 		/// <returns>The specified tabctrl or a new one.</returns>
-		protected TabControl CreateTabElement(FrameworkElement element, TabControl? tabControl = null, int index = -1)
+		protected DockingGroup CreateTabElement(FrameworkElement element, DockingGroup? tabControl = null, int index = -1)
 		{
 			DockingHelper.RemoveElementFromItsParent(element);
 
 			if (tabControl == null)
 			{
-				tabControl = new TabControl();
+				tabControl = new DockingGroup();
 				var nm = GetDockAnchor(element);
 				if (nm.Length > 0)
 					DockGroups[nm] = tabControl;
@@ -519,7 +519,9 @@ namespace WpfDockingManager
 							target = RootSplitter.GetChild(0);
 					}
 
-					var tabControl = CreateTabElement(item, tabControl: target as TabControl, index: index);
+					//var tabControl = CreateTabElement(item, tabControl: target as DockingGroup, index: index);
+					var tabControl = (item as DockingGroup)!;
+					DockingHelper.RemoveElementFromItsParent(tabControl);
 					if (IsEmpty())
 						RootSplitter.Add(tabControl);
 
@@ -530,43 +532,43 @@ namespace WpfDockingManager
 				// Dock to left of target
 				case DockPosition.Left:
 				{
-					var tabCtrl = target as TabControl;
+					var tabCtrl = target as DockingGroup;
 					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a TabControl");
+						throw new InvalidOperationException("Target is not a DockingGroup");
 
-					VerticalSplit(item, true, target as TabControl);
+					VerticalSplit(item, true, target as DockingGroup);
 				}
 				break;
 
 				// Dock to right of target
 				case DockPosition.Right:
 				{
-					var tabCtrl = target as TabControl;
+					var tabCtrl = target as DockingGroup;
 
 					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a TabControl");
+						throw new InvalidOperationException("Target is not a DockingGroup");
 
-					VerticalSplit(item, false, target as TabControl);
+					VerticalSplit(item, false, target as DockingGroup);
 				}
 				break;
 
 				case DockPosition.Top:
 				{
-					var tabCtrl = target as TabControl;
+					var tabCtrl = target as DockingGroup;
 					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a TabControl");
+						throw new InvalidOperationException("Target is not a DockingGroup");
 
-					HorizontalSplit(item, true, target as TabControl);
+					HorizontalSplit(item, true, target as DockingGroup);
 				}
 				break;
 
 				case DockPosition.Bottom:
 				{
-					var tabCtrl = target as TabControl;
+					var tabCtrl = target as DockingGroup;
 					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a TabControl");
+						throw new InvalidOperationException("Target is not a DockingGroup");
 
-					HorizontalSplit(item, false, target as TabControl);
+					HorizontalSplit(item, false, target as DockingGroup);
 				}
 				break;
 
@@ -575,7 +577,7 @@ namespace WpfDockingManager
 			}
 		}
 
-		protected void UpdateLength(UIElement element, DockingSplitter? parent, TabControl tabControl)
+		protected void UpdateLength(UIElement element, DockingSplitter? parent, DockingGroup tabControl)
 		{
 			if (parent == null)
 				return;
@@ -589,11 +591,11 @@ namespace WpfDockingManager
 			}
 		}
 
-		protected void HorizontalSplit(FrameworkElement element, bool before, TabControl? target = null) => Split(element, before, DockingSplitter.Alignment.Horizontal, target);
+		protected void HorizontalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, DockingSplitter.Alignment.Horizontal, target);
 
-		protected void VerticalSplit(FrameworkElement element, bool before, TabControl? target = null) => Split(element, before, DockingSplitter.Alignment.Vertical, target);
+		protected void VerticalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, DockingSplitter.Alignment.Vertical, target);
 
-		protected void Split(FrameworkElement element, bool before, DockingSplitter.Alignment axis, TabControl? target = null)
+		protected void Split(FrameworkElement element, bool before, DockingSplitter.Alignment axis, DockingGroup? target = null)
 		{
 			DockingSplitter? parent;
 			int index;
@@ -616,7 +618,7 @@ namespace WpfDockingManager
 					parent = ReplaceWithSplitter(axis, parent, target!, before, out index);
 			}
 
-			// When we are splitting, the item will always need a new TabControl
+			// When we are splitting, the item will always need a new DockingGroup
 			var tabControl = CreateTabElement(element, tabControl: null);
 			parent.Insert(tabControl, index);
 
@@ -645,7 +647,7 @@ namespace WpfDockingManager
 			return parent;
 		}
 
-		protected DockingSplitter ReplaceWithSplitter(DockingSplitter.Alignment axis, DockingSplitter parentSplitter, TabControl target, bool before, out int index)
+		protected DockingSplitter ReplaceWithSplitter(DockingSplitter.Alignment axis, DockingSplitter parentSplitter, DockingGroup target, bool before, out int index)
 		{
 			var targetIndex = parentSplitter.GetIndex(target);
 			if (targetIndex == -1)
@@ -674,7 +676,7 @@ namespace WpfDockingManager
 			if (removeElement == null)
 				return;
 
-			FrameworkElement? dockingChild = element as TabControl;
+			FrameworkElement? dockingChild = element as DockingGroup;
 			DockingSplitter? splitter = null;
 
 			if (dockingChild != null)
@@ -697,9 +699,9 @@ namespace WpfDockingManager
 			if (dockingChild != element)
 			{
 				bool remove = false;
-				if (dockingChild is TabControl tab && tab.Items.Count <= 1)
+				if (dockingChild is DockingGroup tab && tab.Items.Count <= 1)
 					remove = true;
-				// If the last item is remove, we also remove the TabControl
+				// If the last item is remove, we also remove the DockingGroup
 				else if (dockingChild is DockingSplitter s&& s.IsEmpty())
 					remove = true;
 
@@ -713,7 +715,7 @@ namespace WpfDockingManager
 
 			if (splitter.IsEmpty())
 			{
-				// TODO: Client code should be able to veto this as it might choose to keep the TabControl in place.
+				// TODO: Client code should be able to veto this as it might choose to keep the DockingGroup in place.
 				var parent = VisualTreeHelper.GetParent(splitter);
 				UndockElement(splitter);
 			}
@@ -765,19 +767,19 @@ namespace WpfDockingManager
 			return FindAssociatedContainers(parent, out dockingChild);
 		}
 
-		private static TabControl? FindParentTabControl(DependencyObject element)
+		private static DockingGroup? FindParentDockingGroup(DependencyObject element)
 		{
 			if (element == null)
 				return null;
 
 			var parent = VisualTreeHelper.GetParent(element);
-			var tabControl = parent as TabControl;
+			var tabControl = parent as DockingGroup;
 
 			if (tabControl != null)
 				return tabControl;
 
 			if (parent != null)
-				return FindParentTabControl(parent);
+				return FindParentDockingGroup(parent);
 
 			return null;
 		}
