@@ -14,28 +14,6 @@ namespace WpfDockManager
 		Right
 	}
 
-	public class TabPositionToGridRowConverter : MarkupExtension, IValueConverter
-	{
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			if (value is TabPosition position)
-			{
-				return position == TabPosition.Bottom ? 1 : 0;
-			}
-			return 0;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
-
-		public override object ProvideValue(IServiceProvider serviceProvider)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
 	public partial class DockingGroup : UserControl
 	{
 		public static readonly DependencyProperty TabPositionProperty =
