@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace WpfDockManager
+namespace WpfDockingManager
 {
 	public class DockingHelper
 	{

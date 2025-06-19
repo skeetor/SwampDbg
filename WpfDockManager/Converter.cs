@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace WpfDockManager
+namespace WpfDockingManager
 {
 	public class GridSizeConverter : IValueConverter
 	{

@@ -1,10 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Markup;
 
-namespace WpfDockManager
+namespace WpfDockingManager
 {
 	public enum TabPosition
 	{

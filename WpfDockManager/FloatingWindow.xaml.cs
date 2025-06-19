@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 
-namespace WpfDockManager
+namespace WpfDockingManager
 {
 	/// <summary>
 	/// Interaction logic for FloatingWindow.xaml

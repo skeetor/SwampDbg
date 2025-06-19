@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WpfDockManager\WpfDockManager.csproj" />
+    <ProjectReference Include="..\WpfDockManager\WpfDockingManager.csproj" />
   </ItemGroup>
 
   <ItemGroup>

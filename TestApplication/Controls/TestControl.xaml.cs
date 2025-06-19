@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
-using WpfDockManager;
+using WpfDockingManager;
 
 namespace TestApplication.Controls
 {

@@ -1,7 +1,8 @@
 ﻿
 using System.Windows;
+using WpfDockingManager;
 
-namespace WpfDockManager.Layout
+namespace WpfDockingManager.Layout
 {
 	public class LayoutItem : ITypeConverter<LayoutItem, DependencyObject>
 	{
@@ -24,7 +25,7 @@ namespace WpfDockManager.Layout
 			if (value == null)
 				return null;
 
-			this.Object = value;
+			Object = value;
 			return this;
 		}
 

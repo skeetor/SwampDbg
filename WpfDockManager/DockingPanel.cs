@@ -2,9 +2,9 @@
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
-using LayoutItemList = WpfDockManager.UniqueList<WpfDockManager.Layout.LayoutItem, System.Windows.DependencyObject>;
+using LayoutItemList = WpfDockingManager.UniqueList<WpfDockingManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
-namespace WpfDockManager
+namespace WpfDockingManager
 {
 	/// <summary>
 	/// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
@@ -67,12 +67,12 @@ namespace WpfDockManager
 		{
 			DockPosition dock = (DockPosition)o;
 
-			return (dock == DockPosition.None
+			return dock == DockPosition.None
 					|| dock == DockPosition.Left
 					|| dock == DockPosition.Top
 					|| dock == DockPosition.Right
 					|| dock == DockPosition.Bottom
-					);
+					;
 		}
 
 		private static void OnDockChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
@@ -244,7 +244,7 @@ namespace WpfDockManager
 		internal static bool IsValidDockFloating(object o)
 		{
 			DockingSplitter.Alignment alignment = (DockingSplitter.Alignment)o;
-			return (alignment is 0 or DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal);
+			return alignment is 0 or DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal;
 		}
 
 		public static DockingSplitter.Alignment GetDockFloating(UIElement element)
@@ -709,14 +709,14 @@ namespace WpfDockManager
 			}
 		}
 
-		public IDockingProvider DockingFloat(UIElement element, DockPosition dock, UIElement? target = null, int index = -1, bool show = true, Rect position = default(Rect))
+		public IDockingProvider DockingFloat(UIElement element, DockPosition dock, UIElement? target = null, int index = -1, bool show = true, Rect position = default)
 		{
 			var floating = new FloatingWindow();
 			var dockingPanel = floating.RootDockPanel;
 
 			dockingPanel.DockElement(element, dock, target, index);
 
-			if (!position.Equals(default(Rect)))
+			if (!position.Equals(default))
 			{
 				floating.Left = position.Left;
 				floating.Top = position.Top;

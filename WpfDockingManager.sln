@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36127.28
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplication", "TestApplication\TestApplication.csproj", "{21AB382D-0070-4C77-9FDA-A3F62BB346C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfDockManager", "WpfDockManager\WpfDockManager.csproj", "{E0A6B067-EF9E-46DD-881D-51CEC483E585}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfDockingManager", "WpfDockManager\WpfDockingManager.csproj", "{E0A6B067-EF9E-46DD-881D-51CEC483E585}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

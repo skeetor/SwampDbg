@@ -1,9 +1,9 @@
 ﻿using TestApplication.Configuration;
 using System.Windows;
 using System.Windows.Controls;
-using WpfDockManager;
 using TestApplication.Controls;
 using System.Windows.Automation;
+using WpfDockingManager;
 
 namespace TestApplication
 {

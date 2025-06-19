@@ -1,9 +1,4 @@
-﻿using System;
-using System.Windows;
-using System.Xml.Linq;
-using WpfDockManager.Layout;
-
-namespace WpfDockManager
+﻿namespace WpfDockingManager
 {
 	public interface ITypeConverter<T, U>
 	{
@@ -25,13 +20,13 @@ namespace WpfDockManager
 		public T? Find(T? element)
 		{
 			if (element == null)
-				return default(T);
+				return default;
 
 			var i = IndexOf(element);
 			if (i >= 0)
 				return _items[i];
 
-			return default(T);
+			return default;
 		}
 
 		public bool Contains(T item)
@@ -41,7 +36,7 @@ namespace WpfDockManager
 
 		private static bool IsCompatibleObject(object? value)
 		{
-			return (value is T) || (value == null && default(T) == null);
+			return value is T || value == null && default(T) == null;
 		}
 
 		public int IndexOf(T? item)
@@ -50,7 +45,7 @@ namespace WpfDockManager
 				return -1;
 
 			if (IsCompatibleObject(item))
-				return _items.IndexOf((T)item!);
+				return _items.IndexOf(item!);
 
 			return -1;
 		}
@@ -69,7 +64,7 @@ namespace WpfDockManager
 		public T? Add(T? element)
 		{
 			if (element == null)
-				return default(T);
+				return default;
 
 			var index = IndexOf(element);
 			if (index >= 0)
@@ -103,7 +98,7 @@ namespace WpfDockManager
 		public T? Pop(int index)
 		{
 			if (_items.Count <= index)
-				return default(T);
+				return default;
 
 			T? item = _items[index];
 			_items.RemoveAt(index);
