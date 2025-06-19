@@ -1,0 +1,11 @@
+* text=auto
+.gitattributes text
+.gitignore text
+
+*.cs text
+*.xaml
+
+*.bat   text eol=crlf
+*.jpg binary
+*.ico binary
+*.png binary

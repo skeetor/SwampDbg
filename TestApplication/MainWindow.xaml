@@ -1,0 +1,29 @@
+﻿<Window x:Class="TestApplication.MainWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:DMNS="clr-namespace:WpfDockingManager;assembly=WpfDockingManager"
+		xmlns:local="clr-namespace:TestApplication"
+		mc:Ignorable="d"
+		Title="MainWindow" Height="450" Width="800">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"></RowDefinition>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="Auto"></RowDefinition>
+		</Grid.RowDefinitions>
+
+		<DMNS:DockingPanel Grid.Row="1">
+			<TabControl>
+				<TabItem Header="TestButton1">
+					<Button>Test1</Button>
+				</TabItem>
+				<TabItem Header="TestButton2">
+					<Button>Test2</Button>
+				</TabItem>
+			</TabControl>
+		</DMNS:DockingPanel>
+		
+	</Grid>
+</Window>
