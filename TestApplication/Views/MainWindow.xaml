@@ -63,10 +63,9 @@
 		</StackPanel>
 
 		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
-			<DMNS:DockingGroup Height="30" TabPosition="Bottom">
-				<TabItem Header="TestHeader">
-					<Button>Testbutton</Button>
-				</TabItem>
+			<DMNS:DockingGroup TabPosition="Bottom" DMNS:DockingPanel.DockAnchor="PropertyGroup">
+				<Button DMNS:DockingPanel.DockTitle="Testbutton1">Testbutton1</Button>
+				<Button DMNS:DockingPanel.DockTitle="Testbutton2">Testbutton2</Button>
 			</DMNS:DockingGroup>
 			<!-- The first element doesn't need a dock position because the window is empty anyway and there is nothing we can dock to.
 				If it is provided it is ignored.

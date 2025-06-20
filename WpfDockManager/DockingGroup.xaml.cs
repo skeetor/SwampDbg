@@ -1,6 +1,9 @@
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Xml.Linq;
 
 namespace WpfDockingManager
 {
@@ -12,8 +15,23 @@ namespace WpfDockingManager
 		Right
 	}
 
-	public partial class DockingGroup : UserControl
+	public partial class DockingGroup : Grid
 	{
+		//public static readonly DependencyProperty ContentProperty =
+		//	DependencyProperty.Register(
+		//	"Content",
+		//	typeof(object),
+		//	typeof(DockingGroup),
+		//	new PropertyMetadata(null)
+		//);
+
+		//public object Content
+		//{
+		//	get { return GetValue(ContentProperty); }
+		//	set { SetValue(ContentProperty, value); }
+		//}
+
+		#region Properties
 		public static readonly DependencyProperty TabPositionProperty =
 			DependencyProperty.Register("TabPosition", typeof(TabPosition), typeof(DockingGroup),
 				new PropertyMetadata(TabPosition.Top));
@@ -52,10 +70,63 @@ namespace WpfDockingManager
 			get { return (ICommand)GetValue(CloseTabCommandProperty); }
 			set { SetValue(CloseTabCommandProperty, value); }
 		}
+		#endregion Properties
+
+		//public ItemCollection Items
+		//{
+		//	get { return null!; }
+		//}
 
 		public DockingGroup()
 		{
 			InitializeComponent();
+		}
+
+		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
+		{
+			// If our first tabcontrol is added, we let it through. Everthing else is routed to the tabcontrol.
+			if (visualAdded != null)
+			{
+				if (visualAdded is TabControl firstTab)
+				{
+					if (_tabControl == null)
+					{
+						base.OnVisualChildrenChanged(visualAdded, visualRemoved);
+						return;
+					}
+				}
+
+				DockingHelper.RemoveElementFromItsParent(visualAdded as FrameworkElement);
+				var title = "Tab title goes here";
+				var ti = new TabItem
+				{
+					Header = title,
+					Content = visualAdded
+				};
+				_tabControl.Items.Add(ti);
+			}
+
+			// Our primary tabcontrol may not be removed.
+			if (visualRemoved != null)
+			{
+				if (visualRemoved is TabControl someTab)
+				{
+					if (someTab == _tabControl)
+						throw new InvalidOperationException("Primary TabControl can not be removed.");
+				}
+				base.OnVisualChildrenChanged(null, visualRemoved);
+			}
+		}
+
+		public int Count
+		{
+			get { return _tabControl.Items.Count; }
+		}
+
+		public void InsertItem(object item, string title, int index = -1, bool selected = true)
+		{
+			UIElementCollection c = Children;
+
 		}
 	}
 }

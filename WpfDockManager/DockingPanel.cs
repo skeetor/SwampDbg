@@ -13,14 +13,14 @@ namespace WpfDockingManager
 	/// Add this XmlNamespace attribute to the root element of the markup file where it is 
 	/// to be used:
 	///
-	///     xmlns:WpfDockingManagerNS="clr-namespace:WpfDockManager"
+	///     xmlns:WpfDockingManagerNS="clr-namespace:WpfDockingManager"
 	///
 	///
 	/// Step 1b) Using this custom control in a XAML file that exists in a different project.
 	/// Add this XmlNamespace attribute to the root element of the markup file where it is 
 	/// to be used:
 	///
-	///     xmlns:WpfDockingManagerNS="clr-namespace:WpfDockManager;assembly=WpfDockManager"
+	///     xmlns:WpfDockingManagerNS="clr-namespace:WpfDockingManager;assembly=WpfDockingManager"
 	///
 	/// You will also need to add a project reference from the project where the XAML file lives
 	/// to this project and Rebuild to avoid compilation errors:
@@ -481,9 +481,11 @@ namespace WpfDockingManager
 				Content = element
 			};
 
-			if (index == -1)
-				index = tabControl.Items.Count;
-			tabControl.Items.Insert(index, ti);
+			//if (index == -1)
+			//	index = tabControl.Items.Count;
+			//tabControl.Items.Insert(index, ti);
+
+			tabControl.InsertItem(element, title, index);
 
 			return tabControl;
 		}
@@ -699,7 +701,7 @@ namespace WpfDockingManager
 			if (dockingChild != element)
 			{
 				bool remove = false;
-				if (dockingChild is DockingGroup tab && tab.Items.Count <= 1)
+				if (dockingChild is DockingGroup tab && tab.Count <= 1)
 					remove = true;
 				// If the last item is remove, we also remove the DockingGroup
 				else if (dockingChild is DockingSplitter s&& s.IsEmpty())

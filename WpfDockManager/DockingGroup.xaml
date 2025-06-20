@@ -1,4 +1,4 @@
-<UserControl x:Class="WpfDockingManager.DockingGroup"
+<Grid x:Class="WpfDockingManager.DockingGroup"
 			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -7,116 +7,10 @@
 			 mc:Ignorable="d" 
 			 d:DesignHeight="450" d:DesignWidth="800">
 
-	<UserControl.Resources>
-		<Style x:Key="CloseButtonStyle" TargetType="Button">
-			<Setter Property="Background" Value="Transparent"/>
-			<Setter Property="BorderThickness" Value="0"/>
-			<Setter Property="HorizontalAlignment" Value="Center"/>
-			<Setter Property="VerticalAlignment" Value="Center"/>
-			<Setter Property="Width" Value="16"/>
-			<Setter Property="Height" Value="16"/>
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="Button">
-						<Grid>
-							<Ellipse x:Name="BackEllipse" Fill="Transparent" Stroke="Gray"/>
-							<Path x:Name="Cross" Stroke="Gray" StrokeThickness="2" 
-								  Data="M0,0 L8,8 M0,8 L8,0"/>
-						</Grid>
-						<ControlTemplate.Triggers>
-							<Trigger Property="IsMouseOver" Value="True">
-								<Setter TargetName="BackEllipse" Property="Fill" Value="#FFDDDDDD"/>
-								<Setter TargetName="Cross" Property="Stroke" Value="Black"/>
-							</Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-	</UserControl.Resources>
+	<Grid.Resources>
+	</Grid.Resources>
 	
-	<TabControl x:Name="MainTabControl" 
-				ItemsSource="{Binding Items}"
-				SelectedItem="{Binding SelectedItem}">
-		<TabControl.Template>
-			<ControlTemplate TargetType="TabControl">
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="*"/>
-					</Grid.RowDefinitions>
-					
-					<TabPanel x:Name="HeaderPanel"
-							  Grid.Row="{Binding TabPosition, Converter={local:TabPositionToGridRowConverter}, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"
-							  Panel.ZIndex="1"
-							  Background="Transparent"
-							  IsItemsHost="True" />
-					
-					<Border Grid.Row="1" 
-							BorderThickness="{TemplateBinding BorderThickness}"
-							BorderBrush="{TemplateBinding BorderBrush}"
-							Background="{TemplateBinding Background}">
-						<ContentPresenter x:Name="PART_SelectedContentHost"
-										  ContentSource="SelectedContent"/>
-					</Border>
-				</Grid>
-			</ControlTemplate>
-		</TabControl.Template>
-		
-		<TabControl.ItemContainerStyle>
-			<Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
-				<Setter Property="Template">
-					<Setter.Value>
-						<ControlTemplate TargetType="TabItem">
-							<Grid>
-								<Border x:Name="Border" 
-										Background="{TemplateBinding Background}"
-										BorderThickness="{TemplateBinding BorderThickness}"
-										BorderBrush="{TemplateBinding BorderBrush}"
-										CornerRadius="2"
-										Margin="2,2,2,0">
-									<Grid>
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="*"/>
-											<ColumnDefinition Width="Auto"/>
-										</Grid.ColumnDefinitions>
-										
-										<ContentPresenter x:Name="ContentSite"
-														  Grid.Column="0"
-														  VerticalAlignment="Center"
-														  HorizontalAlignment="Center"
-														  ContentSource="Header"
-														  RecognizesAccessKey="True"
-														  Margin="5,2,5,2"/>
-										
-										<Button x:Name="CloseButton"
-												Grid.Column="1"
-												Style="{StaticResource CloseButtonStyle}"
-												Margin="5,0,5,0"
-												Command="{Binding CloseTabCommand, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"
-												CommandParameter="{Binding}"/>
-									</Grid>
-								</Border>
-							</Grid>
-							<ControlTemplate.Triggers>
-								<Trigger Property="IsSelected" Value="True">
-									<Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
-									<Setter TargetName="Border" Property="BorderBrush" Value="DarkGray"/>
-								</Trigger>
-								<Trigger Property="IsSelected" Value="False">
-									<Setter TargetName="Border" Property="Background" Value="LightGray"/>
-									<Setter TargetName="Border" Property="BorderBrush" Value="Gray"/>
-								</Trigger>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="Border" Property="Background" Value="#FFDDDDDD"/>
-								</Trigger>
-							</ControlTemplate.Triggers>
-						</ControlTemplate>
-					</Setter.Value>
-				</Setter>
-				<Setter Property="Width" Value="{Binding TabWidth, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
-				<Setter Property="Height" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
-			</Style>
-		</TabControl.ItemContainerStyle>
+	<TabControl Name="_tabControl">
 	</TabControl>
-</UserControl>
+
+</Grid>
