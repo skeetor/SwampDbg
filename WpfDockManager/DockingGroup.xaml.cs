@@ -17,24 +17,10 @@ namespace WpfDockingManager
 
 	public partial class DockingGroup : Grid
 	{
-		//public static readonly DependencyProperty ContentProperty =
-		//	DependencyProperty.Register(
-		//	"Content",
-		//	typeof(object),
-		//	typeof(DockingGroup),
-		//	new PropertyMetadata(null)
-		//);
-
-		//public object Content
-		//{
-		//	get { return GetValue(ContentProperty); }
-		//	set { SetValue(ContentProperty, value); }
-		//}
-
 		#region Properties
 		public static readonly DependencyProperty TabPositionProperty =
 			DependencyProperty.Register("TabPosition", typeof(TabPosition), typeof(DockingGroup),
-				new PropertyMetadata(TabPosition.Top));
+				new PropertyMetadata(TabPosition.Top, new PropertyChangedCallback(OnTabPositionChanged)));
 
 		public static readonly DependencyProperty TabWidthProperty =
 			DependencyProperty.Register("TabWidth", typeof(double), typeof(DockingGroup),
@@ -44,13 +30,49 @@ namespace WpfDockingManager
 			DependencyProperty.Register("TabHeight", typeof(double), typeof(DockingGroup),
 				new PropertyMetadata(double.NaN));
 
+		public static readonly DependencyProperty DockAnchorProperty =
+			DependencyProperty.Register("DockAnchor", typeof(string), typeof(DockingGroup),
+				new PropertyMetadata(""));
+
 		public static readonly DependencyProperty CloseTabCommandProperty =
 			DependencyProperty.Register("CloseTabCommand", typeof(ICommand), typeof(DockingGroup));
 
 		public TabPosition TabPosition
 		{
 			get { return (TabPosition)GetValue(TabPositionProperty); }
-			set { SetValue(TabPositionProperty, value); }
+			set
+			{
+				SetValue(TabPositionProperty, value);
+				var dock = Dock.Top;
+				switch(value)
+				{
+					case TabPosition.Top:
+						dock = Dock.Top;
+					break;
+
+					case TabPosition.Bottom:
+						dock = Dock.Bottom;
+					break;
+
+					case TabPosition.Left:
+						dock = Dock.Left;
+					break;
+
+					case TabPosition.Right:
+						dock = Dock.Right;
+					break;
+				}
+				_tabControl.TabStripPlacement = dock;
+			}
+		}
+
+		private static void OnTabPositionChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
+		{
+			var group = depObj as DockingGroup;
+			if (group == null)
+				return;
+
+			group.TabPosition = (TabPosition)e.NewValue;
 		}
 
 		public double TabWidth
@@ -63,6 +85,12 @@ namespace WpfDockingManager
 		{
 			get { return (double)GetValue(TabHeightProperty); }
 			set { SetValue(TabHeightProperty, value); }
+		}
+
+		public string DockAnchor
+		{
+			get { return (string)GetValue(DockAnchorProperty); }
+			set { SetValue(DockAnchorProperty, value); }
 		}
 
 		public ICommand CloseTabCommand

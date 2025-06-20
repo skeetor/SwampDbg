@@ -63,7 +63,7 @@
 		</StackPanel>
 
 		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
-			<DMNS:DockingGroup TabPosition="Bottom" DMNS:DockingPanel.DockAnchor="PropertyGroup">
+			<DMNS:DockingGroup TabPosition="Left" DockAnchor="PropertyGroup">
 				<Button DMNS:DockingPanel.DockTitle="Testbutton1">Testbutton1</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton2">Testbutton2</Button>
 			</DMNS:DockingGroup>
