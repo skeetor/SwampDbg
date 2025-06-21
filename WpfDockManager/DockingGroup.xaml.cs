@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
-using System.Xml.Linq;
 
 namespace WpfDockingManager
 {
@@ -15,12 +15,69 @@ namespace WpfDockingManager
 		Right
 	}
 
+	public class TabPositionDockConverter : IValueConverter
+	{
+		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			var value = (TabPosition)inputValue;
+
+			var dock = Dock.Top;
+			switch (value)
+			{
+				case TabPosition.Top:
+					dock = Dock.Top;
+				break;
+
+				case TabPosition.Bottom:
+					dock = Dock.Bottom;
+				break;
+
+				case TabPosition.Left:
+					dock = Dock.Left;
+				break;
+
+				case TabPosition.Right:
+					dock = Dock.Right;
+				break;
+			}
+
+			return dock;
+		}
+
+		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			var value = (Dock)inputValue;
+
+			var tabPosition = TabPosition.Top;
+			switch (value)
+			{
+				case Dock.Top:
+					tabPosition = TabPosition.Top;
+				break;
+
+				case Dock.Bottom:
+					tabPosition = TabPosition.Bottom;
+				break;
+
+				case Dock.Left:
+					tabPosition = TabPosition.Left;
+				break;
+
+				case Dock.Right:
+					tabPosition = TabPosition.Right;
+				break;
+			}
+
+			return tabPosition;
+		}
+	}
+
 	public partial class DockingGroup : Grid
 	{
 		#region Properties
 		public static readonly DependencyProperty TabPositionProperty =
 			DependencyProperty.Register("TabPosition", typeof(TabPosition), typeof(DockingGroup),
-				new PropertyMetadata(TabPosition.Top, new PropertyChangedCallback(OnTabPositionChanged)));
+				new PropertyMetadata(TabPosition.Top));
 
 		public static readonly DependencyProperty TabWidthProperty =
 			DependencyProperty.Register("TabWidth", typeof(double), typeof(DockingGroup),
@@ -40,39 +97,7 @@ namespace WpfDockingManager
 		public TabPosition TabPosition
 		{
 			get { return (TabPosition)GetValue(TabPositionProperty); }
-			set
-			{
-				SetValue(TabPositionProperty, value);
-				var dock = Dock.Top;
-				switch(value)
-				{
-					case TabPosition.Top:
-						dock = Dock.Top;
-					break;
-
-					case TabPosition.Bottom:
-						dock = Dock.Bottom;
-					break;
-
-					case TabPosition.Left:
-						dock = Dock.Left;
-					break;
-
-					case TabPosition.Right:
-						dock = Dock.Right;
-					break;
-				}
-				_tabControl.TabStripPlacement = dock;
-			}
-		}
-
-		private static void OnTabPositionChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
-		{
-			var group = depObj as DockingGroup;
-			if (group == null)
-				return;
-
-			group.TabPosition = (TabPosition)e.NewValue;
+			set { SetValue(TabPositionProperty, value); }
 		}
 
 		public double TabWidth
