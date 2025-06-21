@@ -10,20 +10,21 @@
 
 	<Grid.Resources>
 		<local:TabPositionDockConverter x:Key="TabPositionConverter"/>
+		<local:TabItemRotation x:Key="TabItemRotation"/>
 	</Grid.Resources>
 
 	<!-- <TextBlock Text="{Binding ElementName=dockingGroupControl, Path=TabPosition}"></TextBlock> -->
 
 	<TabControl Name="_tabControl" TabStripPlacement="{Binding ElementName=dockingGroupControl, Converter={StaticResource TabPositionConverter}, Path=TabPosition}">
 		<TabControl.Resources>
-<!--
+
 			<Style TargetType="{x:Type TabItem}">
 				<Setter Property="HeaderTemplate">
 					<Setter.Value>
 						<DataTemplate>
 							<ContentPresenter Content="{TemplateBinding Content}">
 								<ContentPresenter.LayoutTransform>
-									<RotateTransform Angle="270" />
+									<RotateTransform Angle="{Binding ElementName=dockingGroupControl, Converter={StaticResource TabItemRotation}, Path=TabPosition}" />
 								</ContentPresenter.LayoutTransform>
 							</ContentPresenter>
 						</DataTemplate>
@@ -31,7 +32,7 @@
 				</Setter>
 				<Setter Property="Padding" Value="3" />
 			</Style>
--->
+
 		</TabControl.Resources>
 	</TabControl>
 
