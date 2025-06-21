@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace WpfDockingManager
 {
@@ -119,7 +120,52 @@ namespace WpfDockingManager
 		public void InsertItem(object item, string title, int index = -1, bool selected = true)
 		{
 			UIElementCollection c = Children;
+		}
 
+		private void OnCloseButtonEvent(object sender, RoutedEventArgs e)
+		{
+			var button = sender as DependencyObject;
+			if (button == null)
+				throw new InvalidOperationException("Unknown sender type");
+
+			TabControl? tabControl = null;
+			TabItem? tabItem = null;
+			DockingGroup? group = FindContainers(button, out tabControl, out tabItem);
+
+			if (group != null)
+				OnCloseButton(group, tabControl, tabItem);
+		}
+
+		private DockingGroup? FindContainers(DependencyObject element, out TabControl? tabControl, out TabItem? tabItem)
+		{
+			tabControl = null;
+			tabItem = null;
+
+			while (element != null)
+			{
+				element = VisualTreeHelper.GetParent(element);
+
+				if (element is TabItem ti)
+				{
+					tabItem ??= ti;
+					continue;
+				}
+
+				if (element is TabControl tc)
+				{
+					tabControl ??= tc;
+					continue;
+				}
+
+				if (element is DockingGroup gr)
+					return gr;
+			}
+
+			return null;
+		}
+
+		public virtual void OnCloseButton(DockingGroup group, TabControl? tabControl, TabItem? tabItem)
+		{
 		}
 	}
 }
