@@ -13,12 +13,6 @@ namespace WpfDockingManager
 	/// </summary>
 	public class DockingSplitter : Grid
 	{
-		public enum Alignment
-		{
-			Horizontal = 1,
-			Vertical = 2
-		}
-
 		public const int DefaultHandleWidth = 4;
 		public const int DefaultHandleHeight = 4;
 		private Alignment _alignment = Alignment.Vertical;

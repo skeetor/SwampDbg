@@ -1,63 +1,49 @@
 ﻿using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
 
 namespace WpfDockingManager
 {
-	public class TabPositionDockConverter : IValueConverter
+	public class GridSizeConverter : IValueConverter
 	{
-		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		public static GridSizeConverter Instance { get; } = new();
+
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
-			var value = (TabPosition)inputValue;
-
-			var dock = Dock.Top;
-			switch (value)
-			{
-				case TabPosition.Top:
-				dock = Dock.Top;
-				break;
-
-				case TabPosition.Bottom:
-				dock = Dock.Bottom;
-				break;
-
-				case TabPosition.Left:
-				dock = Dock.Left;
-				break;
-
-				case TabPosition.Right:
-				dock = Dock.Right;
-				break;
-			}
-
-			return dock;
+			return new GridLength((double)value!, GridUnitType.Pixel);
 		}
 
-		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
-			var value = (Dock)inputValue;
+			return ((GridLength)value!).Value;
+		}
+	}
 
-			var tabPosition = TabPosition.Top;
-			switch (value)
+	public class TabPositionToGridRowConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value is Dock position)
 			{
-				case Dock.Top:
-				tabPosition = TabPosition.Top;
-				break;
-
-				case Dock.Bottom:
-				tabPosition = TabPosition.Bottom;
-				break;
-
-				case Dock.Left:
-				tabPosition = TabPosition.Left;
-				break;
-
-				case Dock.Right:
-				tabPosition = TabPosition.Right;
-				break;
+				return position == Dock.Bottom ? 1 : 0;
 			}
+			return 0;
+		}
 
-			return tabPosition;
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException("ConvertBack is not implemented for this converter.");
+		}
+	}
+
+	public class TabPositionToGridRowConverterExtension : MarkupExtension
+	{
+		public override object ProvideValue(IServiceProvider serviceProvider)
+		{
+			return new TabPositionToGridRowConverter();
 		}
 	}
 
@@ -65,15 +51,70 @@ namespace WpfDockingManager
 	{
 		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
 		{
-			var value = (TabPosition)inputValue;
+			var value = (Dock)inputValue;
 
-			if (value == TabPosition.Left)
+			if (value == Dock.Left)
 				return 270;
 
-			if (value == TabPosition.Right)
+			if (value == Dock.Right)
 				return 90;
 
 			return 0;
+		}
+
+		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class GridAdjustmentConverter : IValueConverter
+	{
+		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			var value = (Dock)inputValue;
+
+			// The close button on our DragTabControl needs to change the grid rows/columns depending on the placement.
+			// In case of left or right the button position has to be adjusted. In case of Top/Bottm, the position is
+			// the same.
+			if (value is Dock.Top or Dock.Bottom)
+				return Alignment.Horizontal;
+
+			return Alignment.Vertical;
+		}
+
+		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class GridRowAdjustmentConverter : IValueConverter
+	{
+		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			var value = (Dock)inputValue;
+
+			// The close button on our DragTabControl needs to change the grid rows/columns depending on the placement.
+			// In case of left or right the button position has to be adjusted. In case of Top/Bottm, the position is
+			// the same.
+			if (value is Dock.Top or Dock.Bottom)
+				return 0;
+
+			var param = (string)parameter;
+			if (value == Dock.Left)
+			{
+				if (param == "content")
+					return 1;
+
+				return 0;
+			}
+
+			// Right side, the button is reversed.
+			if (param == "content")
+				return 0;
+
+			return 1;
 		}
 
 		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)

@@ -5,20 +5,12 @@ using System.Windows.Media;
 
 namespace WpfDockingManager
 {
-	public enum TabPosition
-	{
-		Top,
-		Bottom,
-		Left,
-		Right
-	}
-
 	public partial class DockingGroup : Grid
 	{
 		#region Properties
 		public static readonly DependencyProperty TabPositionProperty =
-			DependencyProperty.Register("TabPosition", typeof(TabPosition), typeof(DockingGroup),
-				new PropertyMetadata(TabPosition.Top));
+			DependencyProperty.Register("TabPosition", typeof(Dock), typeof(DockingGroup),
+				new PropertyMetadata(Dock.Top));
 
 		public static readonly DependencyProperty TabWidthProperty =
 			DependencyProperty.Register("TabWidth", typeof(double), typeof(DockingGroup),
@@ -35,9 +27,9 @@ namespace WpfDockingManager
 		public static readonly DependencyProperty CloseTabCommandProperty =
 			DependencyProperty.Register("CloseTabCommand", typeof(ICommand), typeof(DockingGroup));
 
-		public TabPosition TabPosition
+		public Dock TabPosition
 		{
-			get { return (TabPosition)GetValue(TabPositionProperty); }
+			get { return (Dock)GetValue(TabPositionProperty); }
 			set { SetValue(TabPositionProperty, value); }
 		}
 
@@ -65,11 +57,6 @@ namespace WpfDockingManager
 			set { SetValue(CloseTabCommandProperty, value); }
 		}
 		#endregion Properties
-
-		//public ItemCollection Items
-		//{
-		//	get { return null!; }
-		//}
 
 		public DockingGroup()
 		{

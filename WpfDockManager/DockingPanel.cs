@@ -232,28 +232,27 @@ namespace WpfDockingManager
 		public static readonly DependencyProperty DockFloatingProperty =
 				DependencyProperty.RegisterAttached(
 						"DockFloating",
-						typeof(DockingSplitter.Alignment),
+						typeof(Alignment),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							(DockingSplitter.Alignment)0
-
+							(Alignment)0		// There is no null value so we have to use this instead.
 							),
 						new ValidateValueCallback(IsValidDockFloating)
 					);
 
 		internal static bool IsValidDockFloating(object o)
 		{
-			DockingSplitter.Alignment alignment = (DockingSplitter.Alignment)o;
-			return alignment is 0 or DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal;
+			Alignment alignment = (Alignment)o;
+			return alignment is 0 or Alignment.Vertical or Alignment.Horizontal;
 		}
 
-		public static DockingSplitter.Alignment GetDockFloating(UIElement element)
+		public static Alignment GetDockFloating(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (DockingSplitter.Alignment)element.GetValue(DockFloatingProperty);
+			return (Alignment)element.GetValue(DockFloatingProperty);
 		}
 
-		public static void SetDockFloating(UIElement element, DockingSplitter.Alignment value)
+		public static void SetDockFloating(UIElement element, Alignment value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 			element.SetValue(DockFloatingProperty, value);
@@ -286,7 +285,7 @@ namespace WpfDockingManager
 		public DockingPanel()
 			: base()
 		{
-			RootSplitter.Aligned = DockingSplitter.Alignment.Vertical;
+			RootSplitter.Aligned = Alignment.Vertical;
 			Children.Add(RootSplitter);
 		}
 
@@ -347,7 +346,7 @@ namespace WpfDockingManager
 			var index = GetDockIndex(element);
 
 			var floating = GetDockFloating(element);
-			if (floating is DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal)
+			if (floating is Alignment.Vertical or Alignment.Horizontal)
 			{
 				var rect = GetFloatingRectangle(element);
 				DockingFloat(element, dock, target, index, true, rect);
@@ -430,7 +429,7 @@ namespace WpfDockingManager
 				var index = GetDockIndex(element);
 
 				var floating = GetDockFloating(element);
-				if (floating is DockingSplitter.Alignment.Vertical or DockingSplitter.Alignment.Horizontal)
+				if (floating is Alignment.Vertical or Alignment.Horizontal)
 				{
 					var rect = GetFloatingRectangle(element);
 					DockingFloat(element, dock, target, index, true, rect);
@@ -502,9 +501,9 @@ namespace WpfDockingManager
 			if (IsEmpty())
 			{
 				if (dock is DockPosition.Top or DockPosition.Bottom)
-					RootSplitter.Aligned = DockingSplitter.Alignment.Horizontal;
+					RootSplitter.Aligned = Alignment.Horizontal;
 				else if (dock is DockPosition.Left or DockPosition.Right)
-					RootSplitter.Aligned = DockingSplitter.Alignment.Vertical;
+					RootSplitter.Aligned = Alignment.Vertical;
 
 				dock = DockPosition.None;
 			}
@@ -593,11 +592,11 @@ namespace WpfDockingManager
 			}
 		}
 
-		protected void HorizontalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, DockingSplitter.Alignment.Horizontal, target);
+		protected void HorizontalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, Alignment.Horizontal, target);
 
-		protected void VerticalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, DockingSplitter.Alignment.Vertical, target);
+		protected void VerticalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, Alignment.Vertical, target);
 
-		protected void Split(FrameworkElement element, bool before, DockingSplitter.Alignment axis, DockingGroup? target = null)
+		protected void Split(FrameworkElement element, bool before, Alignment axis, DockingGroup? target = null)
 		{
 			DockingSplitter? parent;
 			int index;
@@ -627,7 +626,7 @@ namespace WpfDockingManager
 			UpdateLength(element, parent, tabControl);
 		}
 
-		protected DockingSplitter ReplaceRootSplitter(bool before, DockingSplitter.Alignment axis, out int index)
+		protected DockingSplitter ReplaceRootSplitter(bool before, Alignment axis, out int index)
 		{
 			index = 0;
 			var parent = RootSplitter;
@@ -649,7 +648,7 @@ namespace WpfDockingManager
 			return parent;
 		}
 
-		protected DockingSplitter ReplaceWithSplitter(DockingSplitter.Alignment axis, DockingSplitter parentSplitter, DockingGroup target, bool before, out int index)
+		protected DockingSplitter ReplaceWithSplitter(Alignment axis, DockingSplitter parentSplitter, DockingGroup target, bool before, out int index)
 		{
 			var targetIndex = parentSplitter.GetIndex(target);
 			if (targetIndex == -1)

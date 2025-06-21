@@ -4,6 +4,12 @@ using System.Windows;
 
 namespace WpfDockingManager
 {
+	public enum Alignment
+	{
+		Horizontal = 1,
+		Vertical = 2
+	}
+
 	public interface IDockingProvider
 	{
 		public IDockingPanel GetDockingPanel();

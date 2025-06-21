@@ -1,0 +1,183 @@
+<TabControl x:Class="WpfDockingManager.DragTabControl"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:local="clr-namespace:WpfDockingManager"
+			 x:Name="dragTabControl"
+			 mc:Ignorable="d" 
+			 d:DesignHeight="450" d:DesignWidth="800">
+
+	<TabControl.Resources>
+		<local:TabItemRotation x:Key="TabItemRotation"/>
+		<local:GridAdjustmentConverter x:Key="GridAdjustment"/>
+		<local:GridRowAdjustmentConverter x:Key="GridRowAdjustment"/>
+
+		<Style x:Key="CloseButtonStyle" TargetType="Button">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="Width" Value="16"/>
+			<Setter Property="Height" Value="16"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Grid>
+							<Path x:Name="Cross" Stroke="Gray" StrokeThickness="2" 
+								Data="M4,4 L13,13 M4,13 L13,4"/>
+						</Grid>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="Cross" Property="Stroke" Value="Black"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+			<EventSetter Event="Button.Click" Handler="OnCloseButtonEvent" />
+		</Style>
+
+		<Style TargetType="{x:Type TabItem}">
+			<Setter Property="HeaderTemplate">
+				<Setter.Value>
+					<DataTemplate>
+						<ContentPresenter Content="{TemplateBinding Content}">
+							<ContentPresenter.LayoutTransform>
+								<RotateTransform Angle="{Binding ElementName=dragTabControl, Converter={StaticResource TabItemRotation}, Path=TabStripPlacement}" />
+							</ContentPresenter.LayoutTransform>
+						</ContentPresenter>
+					</DataTemplate>
+				</Setter.Value>
+			</Setter>
+			<Setter Property="Padding" Value="3" />
+		</Style>
+	</TabControl.Resources>
+
+	<TabControl.ItemContainerStyle>
+		<Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+			<Style.Triggers>
+				<!-- Depending on the orientation, we have to place the close button in the correct place.
+					This means, we have to use rows or columns and put the button after the text. This
+					can not be done in a nice way as the grid can not conditionally create columns or rows
+					so we have to duplicate the style with the different setups. We can at least reduce it
+					to a single duplicate, using converters to place the button in the correct spot.
+				-->
+				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=GridAdjustment}}" Value="Horizontal">
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="TabItem">
+								<Grid>
+									<Border x:Name="Border" 
+											Background="{TemplateBinding Background}"
+											BorderThickness="{TemplateBinding BorderThickness}"
+											BorderBrush="{TemplateBinding BorderBrush}"
+											CornerRadius="2"
+											Margin="2,2,2,0">
+										<Grid Name="_btnGrid">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*"/>
+												<ColumnDefinition Width="Auto"/>
+											</Grid.ColumnDefinitions>
+
+											<ContentPresenter x:Name="ContentSite"
+																Grid.Column="0"
+																VerticalAlignment="Center"
+																HorizontalAlignment="Center"
+																ContentSource="Header"
+																RecognizesAccessKey="True"
+																Margin="5,2,5,2"/>
+
+											<Button x:Name="CloseButton"
+														Grid.Column="1"
+														Style="{StaticResource CloseButtonStyle}"
+														Margin="5,0,5,0"
+														Command="{Binding CloseTabCommand, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"
+														CommandParameter="{Binding}"/>
+										</Grid>
+									</Border>
+								</Grid>
+								<ControlTemplate.Triggers>
+									<Trigger Property="IsSelected" Value="True">
+										<Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
+										<Setter TargetName="Border" Property="BorderBrush" Value="DarkGray"/>
+									</Trigger>
+									<Trigger Property="IsSelected" Value="False">
+										<Setter TargetName="Border" Property="Background" Value="LightGray"/>
+										<Setter TargetName="Border" Property="BorderBrush" Value="Gray"/>
+									</Trigger>
+									<Trigger Property="IsMouseOver" Value="True">
+										<Setter TargetName="Border" Property="Background" Value="#FFDDDDDD"/>
+									</Trigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+				</DataTrigger>
+				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=GridAdjustment}}" Value="Vertical">
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="TabItem">
+								<Grid>
+									<Border x:Name="Border" 
+											Background="{TemplateBinding Background}"
+											BorderThickness="{TemplateBinding BorderThickness}"
+											BorderBrush="{TemplateBinding BorderBrush}"
+											CornerRadius="2"
+											Margin="2,2,2,0">
+										<Grid Name="_btnGrid">
+											<Grid.RowDefinitions>
+												<RowDefinition Height="Auto"/>
+												<RowDefinition Height="*"/>
+											</Grid.RowDefinitions>
+
+											<ContentPresenter x:Name="ContentSite"
+																Grid.Row="{Binding
+																	RelativeSource={RelativeSource TemplatedParent},
+																	Path=TabStripPlacement,
+																	Converter={StaticResource ResourceKey=GridRowAdjustment},
+																	ConverterParameter=content}"
+																VerticalAlignment="Center"
+																HorizontalAlignment="Center"
+																ContentSource="Header"
+																RecognizesAccessKey="True"
+																Margin="5,2,5,2"/>
+
+											<Button x:Name="CloseButton"
+														Grid.Row="{Binding
+															RelativeSource={RelativeSource TemplatedParent},
+															Path=TabStripPlacement,
+															Converter={StaticResource ResourceKey=GridRowAdjustment},
+															ConverterParameter=button}"
+														Style="{StaticResource CloseButtonStyle}"
+														Margin="5,0,5,0"
+														Command="{Binding CloseTabCommand, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"
+														CommandParameter="{Binding}"/>
+										</Grid>
+									</Border>
+								</Grid>
+								<ControlTemplate.Triggers>
+									<Trigger Property="IsSelected" Value="True">
+										<Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
+										<Setter TargetName="Border" Property="BorderBrush" Value="DarkGray"/>
+									</Trigger>
+									<Trigger Property="IsSelected" Value="False">
+										<Setter TargetName="Border" Property="Background" Value="LightGray"/>
+										<Setter TargetName="Border" Property="BorderBrush" Value="Gray"/>
+									</Trigger>
+									<Trigger Property="IsMouseOver" Value="True">
+										<Setter TargetName="Border" Property="Background" Value="#FFDDDDDD"/>
+									</Trigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+				</DataTrigger>
+			</Style.Triggers>
+			<Setter Property="Width" Value="{Binding TabWidth, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
+			<Setter Property="Height" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
+		</Style>
+
+	</TabControl.ItemContainerStyle>
+
+</TabControl>
