@@ -65,6 +65,8 @@ namespace WpfDockingManager
 		}
 		#endregion Events
 
+		private TabItem? _draggedTabItem;
+
 		public DragTabControl()
 		{
 			InitializeComponent();
@@ -81,7 +83,28 @@ namespace WpfDockingManager
 
 		private void OnItemStopDraggingHandler(object? sender, DragTabItemEventArgs e)
 		{
-			throw new NotImplementedException();
+			if (e.Cancel)
+				return;
+
+			if (e.SourceIndex == -1 || e.TargetIndex == -1)
+				return;
+
+			var tabControl = e.Source as DragTabControl;
+			if (tabControl == null)
+				return;
+
+			tabControl.Items.RemoveAt(e.SourceIndex);
+			tabControl.Items.Insert(e.TargetIndex, e.TabItem);
+
+			// None of these works. The targetpanel will not refresh.
+			//tabControl.SelectedItem = e.TabItem;
+			//tabControl.SelectedIndex = e.TargetIndex;
+
+			// Setting the SelectedItem/-Index doesn't refresh the TabControl panel and it stays
+			// blank for some reason. So we have to set the index accordingly.
+			// https://stackoverflow.com/questions/33974939/difficulty-with-tabcontrol-tabitem-refresh
+			Dispatcher.BeginInvoke((Action)(() => SelectedIndex = e.TargetIndex));
+			_draggedTabItem = null;
 		}
 
 		private void OnItemCloseHandler(object? sender, DragTabItemEventArgs e)
@@ -132,6 +155,70 @@ namespace WpfDockingManager
 			}
 
 			return parent;
+		}
+
+		private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			var tabControl = (TabControl)sender;
+			_draggedTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+
+			if (_draggedTabItem != null)
+			{
+				DragDrop.DoDragDrop(tabControl, _draggedTabItem, DragDropEffects.Move);
+				tabControl.SelectedItem = _draggedTabItem;
+			}
+		}
+
+		private void OnPreviewMouseMove(object sender, MouseEventArgs e)
+		{
+			if (e.LeftButton == MouseButtonState.Pressed && _draggedTabItem == null)
+			{
+				var tabControl = (TabControl)sender;
+				TabItem? tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+				if (tabItem != null)
+				{
+					_draggedTabItem = tabItem;
+					DragDrop.DoDragDrop(tabControl, _draggedTabItem, DragDropEffects.Move);
+					tabControl.SelectedItem = _draggedTabItem;
+				}
+			}
+		}
+
+		private void OnDragEnter(object sender, DragEventArgs e)
+		{
+			if (e.Data.GetDataPresent(typeof(TabItem)))
+			{
+				e.Effects = DragDropEffects.Move;
+			}
+			else
+			{
+				e.Effects = DragDropEffects.None;
+			}
+		}
+
+		private void OnDrop(object sender, DragEventArgs e)
+		{
+			var tabControl = (TabControl)sender;
+			TabItem? targetTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			TabItem draggedItem = (TabItem)e.Data.GetData(typeof(TabItem));
+
+			int targetIndex = -1;
+			int draggedIndex = -1;
+
+			if (targetTabItem != null && draggedItem != null && targetTabItem != draggedItem)
+			{
+				targetIndex = tabControl.Items.IndexOf(targetTabItem);
+				draggedIndex = tabControl.Items.IndexOf(draggedItem);
+			}
+
+			var ev = new DragTabItemEventArgs(ItemStopDraggingEventEvent)
+			{
+				TabItem = _draggedTabItem,
+				SourceIndex = draggedIndex,
+				TargetIndex = targetIndex
+			};
+			_draggedTabItem = null;
+			RaiseEvent(ev);
 		}
 	}
 }
