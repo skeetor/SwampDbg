@@ -1,23 +1,9 @@
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace WpfDockingManager
 {
-	public class DragTst
-	{
-		public static void CreateDragTst()
-		{
-			var ctrl = new DragTabControl();
-			ctrl.ItemCloseEventHandler += MyEventHandler;
-		}
-
-		private static void MyEventHandler(object? sender, DragTabItemEventArgs e)
-		{
-			throw new NotImplementedException();
-		}
-	}
 	public partial class DragTabControl : TabControl
 	{
 		#region Properties
@@ -50,12 +36,11 @@ namespace WpfDockingManager
 			set { SetValue(CloseTabCommandProperty, value); }
 		}
 		#endregion Properties
-
 		#region Events
 		public static readonly RoutedEvent ItemCloseEventEvent = EventManager.RegisterRoutedEvent(
 			 "ItemCloseEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
 
-		public event DragTabEventHandler ItemCloseEventHandler
+		public event DragTabEventHandler ItemCloseEventHandlers
 		{
 			add { AddHandler(ItemCloseEventEvent, value); }
 			remove { RemoveHandler(ItemCloseEventEvent, value); }
@@ -64,7 +49,7 @@ namespace WpfDockingManager
 		public static readonly RoutedEvent ItemStartDraggingEventEvent = EventManager.RegisterRoutedEvent(
 			 "ItemStartDraggingEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
 
-		public event DragTabEventHandler ItemStartDraggingEventHandler
+		public event DragTabEventHandler ItemStartDraggingEventHandlers
 		{
 			add { AddHandler(ItemStartDraggingEventEvent, value); }
 			remove { RemoveHandler(ItemStartDraggingEventEvent, value); }
@@ -73,7 +58,7 @@ namespace WpfDockingManager
 		public static readonly RoutedEvent ItemStopDraggingEventEvent = EventManager.RegisterRoutedEvent(
 			 "ItemStopDraggingEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
 
-		public event DragTabEventHandler ItemStopDraggingEventHandler
+		public event DragTabEventHandler ItemStopDraggingEventHandlers
 		{
 			add { AddHandler(ItemStopDraggingEventEvent, value); }
 			remove { RemoveHandler(ItemStopDraggingEventEvent, value); }
@@ -84,9 +69,9 @@ namespace WpfDockingManager
 		{
 			InitializeComponent();
 
-			ItemStartDraggingEventHandler += OnItemStartDraggingHandler;
-			ItemStopDraggingEventHandler += OnItemStopDraggingHandler;
-			ItemCloseEventHandler += OnItemCloseHandler;
+			ItemStartDraggingEventHandlers += OnItemStartDraggingHandler;
+			ItemStopDraggingEventHandlers += OnItemStopDraggingHandler;
+			ItemCloseEventHandlers += OnItemCloseHandler;
 		}
 
 		private void OnItemStartDraggingHandler(object? sender, DragTabItemEventArgs e)
