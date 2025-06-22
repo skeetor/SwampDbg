@@ -1,27 +1,23 @@
-using System.ComponentModel;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace WpfDockingManager
 {
-	public class DragTabControlEvent : CancelEventArgs
+	public class DragTst
 	{
-		public enum EventType
+		public static void CreateDragTst()
 		{
-			None,
-			Close,
-			Move,
-			Add,
-			Remove
+			var ctrl = new DragTabControl();
+			ctrl.ItemCloseEventHandler += MyEventHandler;
 		}
 
-		public EventType Reason { get; set; } = EventType.None;
-		public TabItem? TabItem { get; set; } = null;
-		public int SourceIndex { get; set; } = -1;
-		public int TargetIndex { get; set; } = -1;
+		private static void MyEventHandler(object? sender, DragTabItemEventArgs e)
+		{
+			throw new NotImplementedException();
+		}
 	}
-
 	public partial class DragTabControl : TabControl
 	{
 		#region Properties
@@ -55,18 +51,65 @@ namespace WpfDockingManager
 		}
 		#endregion Properties
 
-		public event CancelEventHandler CloseButtonClicked;
+		#region Events
+		public static readonly RoutedEvent ItemCloseEventEvent = EventManager.RegisterRoutedEvent(
+			 "ItemCloseEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
+
+		public event DragTabEventHandler ItemCloseEventHandler
+		{
+			add { AddHandler(ItemCloseEventEvent, value); }
+			remove { RemoveHandler(ItemCloseEventEvent, value); }
+		}
+
+		public static readonly RoutedEvent ItemStartDraggingEventEvent = EventManager.RegisterRoutedEvent(
+			 "ItemStartDraggingEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
+
+		public event DragTabEventHandler ItemStartDraggingEventHandler
+		{
+			add { AddHandler(ItemStartDraggingEventEvent, value); }
+			remove { RemoveHandler(ItemStartDraggingEventEvent, value); }
+		}
+
+		public static readonly RoutedEvent ItemStopDraggingEventEvent = EventManager.RegisterRoutedEvent(
+			 "ItemStopDraggingEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
+
+		public event DragTabEventHandler ItemStopDraggingEventHandler
+		{
+			add { AddHandler(ItemStopDraggingEventEvent, value); }
+			remove { RemoveHandler(ItemStopDraggingEventEvent, value); }
+		}
+		#endregion Events
 
 		public DragTabControl()
 		{
 			InitializeComponent();
 
-			CloseButtonClicked += OnCloseButtonEventHandler;
+			ItemStartDraggingEventHandler += OnItemStartDraggingHandler;
+			ItemStopDraggingEventHandler += OnItemStopDraggingHandler;
+			ItemCloseEventHandler += OnItemCloseHandler;
 		}
 
-		private void OnCloseButtonEventHandler(object? sender, CancelEventArgs e)
+		private void OnItemStartDraggingHandler(object? sender, DragTabItemEventArgs e)
 		{
 			throw new NotImplementedException();
+		}
+
+		private void OnItemStopDraggingHandler(object? sender, DragTabItemEventArgs e)
+		{
+			throw new NotImplementedException();
+		}
+
+		private void OnItemCloseHandler(object? sender, DragTabItemEventArgs e)
+		{
+			if (e.Handled || e.Cancel)
+				return;
+
+			var ctrl = e.Source as DragTabControl;
+			if (ctrl == null)
+				return;
+
+			ctrl.Items.RemoveAt(e.SourceIndex);
+			e.Handled = true;
 		}
 
 		private void OnCloseButtonEvent(object sender, RoutedEventArgs e)
@@ -78,20 +121,16 @@ namespace WpfDockingManager
 			TabItem? tabItem = null;
 			DragTabControl? tabControl = FindContainers(button, out tabItem);
 
-			if (tabControl == null)
+			if (tabControl == null || tabControl != this)
 				return;
 
-			DragTabControlEvent eventArg = new DragTabControlEvent()
+			var eventArgs = new DragTabItemEventArgs(ItemCloseEventEvent)
 			{
-				Reason = DragTabControlEvent.EventType.Close,
 				TabItem = tabItem,
 				SourceIndex = tabControl.Items.IndexOf(tabItem)
 			};
 
-			CloseButtonClicked(tabControl, eventArg);
-
-			if (tabControl != null)
-				tabControl.OnCloseButton(tabItem);
+			RaiseEvent(eventArgs);
 		}
 
 		private DragTabControl? FindContainers(DependencyObject element, out TabItem? tabItem)
@@ -108,10 +147,6 @@ namespace WpfDockingManager
 			}
 
 			return parent;
-		}
-
-		public virtual void OnCloseButton(TabItem? tabItem)
-		{
 		}
 	}
 }
