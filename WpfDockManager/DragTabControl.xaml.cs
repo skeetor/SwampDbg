@@ -78,7 +78,10 @@ namespace WpfDockingManager
 
 		private void OnItemStartDraggingHandler(object? sender, DragTabItemEventArgs e)
 		{
-			throw new NotImplementedException();
+			if (e.Cancel)
+				return;
+
+			_draggedTabItem = e.TabItem;
 		}
 
 		private void OnItemStopDraggingHandler(object? sender, DragTabItemEventArgs e)
@@ -160,10 +163,20 @@ namespace WpfDockingManager
 		private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
 			var tabControl = (TabControl)sender;
-			_draggedTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			var draggedTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
 
-			if (_draggedTabItem != null)
+			if (draggedTabItem != null)
 			{
+				var ev = new DragTabItemEventArgs(ItemStartDraggingEventEvent)
+				{
+					TabItem = draggedTabItem,
+					SourceIndex = Items.IndexOf(draggedTabItem),
+					TargetIndex = -1
+				};
+				RaiseEvent(ev);
+				if (ev.Cancel)
+					return;
+
 				DragDrop.DoDragDrop(tabControl, _draggedTabItem, DragDropEffects.Move);
 				tabControl.SelectedItem = _draggedTabItem;
 			}
