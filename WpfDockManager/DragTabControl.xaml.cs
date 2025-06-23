@@ -96,19 +96,29 @@ namespace WpfDockingManager
 
 			DragDrop.DoDragDrop(this, e.TabItem, DragDropEffects.Move);
 			SelectedItem = e.TabItem;
+			_dragState.IsDragging = true;
 		}
 
 		private void OnItemStopDraggingHandler(object? sender, DragTabItemEventArgs e)
 		{
-			if (e.Cancel)
+			if (e.Handled)
+			{
+				_dragState = new DragState();
 				return;
+			}
 
 			if (e.SourceIndex == -1 || e.TargetIndex == -1)
+			{
+				_dragState = new DragState();
 				return;
+			}
 
 			var tabControl = e.Source as DragTabControl;
 			if (tabControl == null)
+			{
+				_dragState = new DragState();
 				return;
+			}
 
 			tabControl.Items.RemoveAt(e.SourceIndex);
 			tabControl.Items.Insert(e.TargetIndex, e.TabItem);
@@ -185,10 +195,10 @@ namespace WpfDockingManager
 			_dragState.MousePosition = e.GetPosition(this);
 			_dragState.DragDistance = 0;
 
-			SelectedItem = _dragState.TabItem;
+			// TODO: Do we want to make the dragged item the selected one?
+			// SelectedItem = _dragState.TabItem;
 		}
 
-		static int line = 0;
 		private void OnPreviewMouseMove(object sender, MouseEventArgs e)
 		{
 			if (e.LeftButton != MouseButtonState.Pressed || _dragState.TabItem == null)
@@ -220,64 +230,58 @@ namespace WpfDockingManager
 				_dragState = new DragState();
 				return;
 			}
-
-			_dragState.IsDragging = true;
-			Debug.WriteLine("Dragging started: " + _dragState.IsDragging.ToString());
-
-			// TODO: Do we want a drag moving event here?
 		}
 
 		private void OnDragEnter(object sender, DragEventArgs e)
 		{
+			if (e.Handled)
+				return;
+
 			var tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
 			if (tabItem != null)
-			{
-				Debug.WriteLine((++line).ToString() + " Drag Move");
 				e.Effects = DragDropEffects.Move;
-			}
 			else
-			{
-				Debug.WriteLine((++line).ToString() + " Drag None");
 				e.Effects = DragDropEffects.None;
-			}
 
-			//Debug.WriteLine((++line).ToString() + " Drag Test: " + IsMouseOver.ToString());
+			e.Handled = true;
+		}
 
-			//if (e.Data.GetDataPresent(typeof(TabItem)))
-			//{
-			//	Debug.WriteLine((++line).ToString() + " Drag Move");
-			//	e.Effects = DragDropEffects.Move;
-			//}
-			//else
-			//{
-			//	Debug.WriteLine((++line).ToString() + " Drag None");
-			//	e.Effects = DragDropEffects.None;
-			//}
+		private void OnDragOver(object sender, DragEventArgs e)
+		{
+			if (e.Handled)
+				return;
+
+			var tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			if (tabItem != null)
+				e.Effects = DragDropEffects.Move;
+			else
+				e.Effects = DragDropEffects.None;
+
+			e.Handled = true;
 		}
 
 		private void OnDrop(object sender, DragEventArgs e)
 		{
-			//var tabControl = (TabControl)sender;
-			//TabItem? targetTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
-			//TabItem draggedItem = (TabItem)e.Data.GetData(typeof(TabItem));
+			var tabControl = (TabControl)sender;
+			TabItem? targetTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			TabItem draggedItem = (TabItem)e.Data.GetData(typeof(TabItem));
 
-			//int targetIndex = -1;
-			//int draggedIndex = -1;
+			int targetIndex = -1;
+			int draggedIndex = -1;
 
-			//if (targetTabItem != null && draggedItem != null && targetTabItem != draggedItem)
-			//{
-			//	targetIndex = tabControl.Items.IndexOf(targetTabItem);
-			//	draggedIndex = tabControl.Items.IndexOf(draggedItem);
-			//}
+			if (targetTabItem != null && draggedItem != null && targetTabItem != draggedItem)
+			{
+				targetIndex = tabControl.Items.IndexOf(targetTabItem);
+				draggedIndex = tabControl.Items.IndexOf(draggedItem);
+			}
 
-			//var ev = new DragTabItemEventArgs(ItemStopDraggingEventEvent)
-			//{
-			//	TabItem = _draggedTabItem,
-			//	SourceIndex = draggedIndex,
-			//	TargetIndex = targetIndex
-			//};
-			//_draggedTabItem = null;
-			//RaiseEvent(ev);
+			var ev = new DragTabItemEventArgs(ItemStopDraggingEventEvent)
+			{
+				TabItem = _dragState.TabItem,
+				SourceIndex = draggedIndex,
+				TargetIndex = targetIndex
+			};
+			RaiseEvent(ev);
 		}
 	}
 }

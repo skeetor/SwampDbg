@@ -11,6 +11,7 @@
 			PreviewMouseLeftButtonDown="OnPreviewMouseLeftButtonDown"
 			PreviewMouseMove="OnPreviewMouseMove"
 			DragEnter="OnDragEnter"
+			DragOver="OnDragOver"
 			Drop="OnDrop">
 
 	<TabControl.Resources>
