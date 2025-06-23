@@ -1,11 +1,19 @@
 ﻿
-using System.ComponentModel;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 
 namespace WpfDockingManager
 {
+	public enum DockingPosition
+	{
+		None,
+		Top,
+		Bottom,
+		Left,
+		Right,
+		Floating
+	}
+
 	public enum DockingEventType
 	{
 		None,
@@ -31,9 +39,9 @@ namespace WpfDockingManager
 
 	public interface IDockingPanel
 	{
-		public void DockElement(UIElement element, DockPosition dock, UIElement? target = null, int index = -1);
+		public void DockElement(UIElement element, DockingPosition dock, UIElement? target = null, int index = -1);
 		public void UndockElement(UIElement? element);
-		public IDockingProvider DockingFloat(UIElement element, DockPosition dock, UIElement? target = null, int index = -1, bool show = true, Rect position = default);
+		public IDockingProvider DockingFloat(UIElement element, DockingPosition dock, UIElement? target = null, int index = -1, bool show = true, Rect position = default);
 	}
 
 	public delegate void DragTabEventHandler(object? sender, DragTabItemEventArgs e);

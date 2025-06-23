@@ -6,15 +6,27 @@ using System.Windows.Media;
 
 namespace WpfDockingManager
 {
-	public class DragState
+	public class DragStateInfo
 	{
 		public const double DefaultStartDragDistance = 7.0;
 
 		public bool IsDragging { get; set; } = false;
-		public TabItem? TabItem { get; set; } = null;
-		public int TabIndex { get; set; } = -1;
-		public Point MousePosition { get; set; } = default(Point);
-		public double DragDistance {  get; set; } = 0;
+		public TabItem? TabItem { get; } = null;
+		public int TabIndex { get; } = -1;
+		public Point MousePosition { get; } = default(Point);
+
+
+		public DragStateInfo()
+		{
+		}
+
+		public DragStateInfo(TabItem? tabItem, int tabIndex, Point mousePosition)
+		{
+			IsDragging = false;
+			TabItem = tabItem;
+			TabIndex = tabIndex;
+			MousePosition = mousePosition;
+		}
 	}
 
 	public partial class DragTabControl : TabControl
@@ -78,7 +90,7 @@ namespace WpfDockingManager
 		}
 		#endregion Events
 
-		private DragState _dragState = new DragState();
+		public DragStateInfo DragState { get; private set; } = new DragStateInfo();
 
 		public DragTabControl()
 		{
@@ -96,27 +108,27 @@ namespace WpfDockingManager
 
 			DragDrop.DoDragDrop(this, e.TabItem, DragDropEffects.Move);
 			SelectedItem = e.TabItem;
-			_dragState.IsDragging = true;
+			DragState.IsDragging = true;
 		}
 
 		private void OnItemStopDraggingHandler(object? sender, DragTabItemEventArgs e)
 		{
 			if (e.Handled)
 			{
-				_dragState = new DragState();
+				DragState = new DragStateInfo();
 				return;
 			}
 
 			if (e.SourceIndex == -1 || e.TargetIndex == -1)
 			{
-				_dragState = new DragState();
+				DragState = new DragStateInfo();
 				return;
 			}
 
 			var tabControl = e.Source as DragTabControl;
 			if (tabControl == null)
 			{
-				_dragState = new DragState();
+				DragState = new DragStateInfo();
 				return;
 			}
 
@@ -131,7 +143,7 @@ namespace WpfDockingManager
 			// blank for some reason. So we have to set the index accordingly.
 			// https://stackoverflow.com/questions/33974939/difficulty-with-tabcontrol-tabitem-refresh
 			Dispatcher.BeginInvoke((Action)(() => SelectedIndex = e.TargetIndex));
-			_dragState = new DragState();
+			DragState = new DragStateInfo();
 		}
 
 		private void OnItemCloseHandler(object? sender, DragTabItemEventArgs e)
@@ -186,14 +198,13 @@ namespace WpfDockingManager
 
 		private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
-			_dragState = new DragState();
-			_dragState.TabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			DragState = new DragStateInfo();
+			TabItem? tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
 
-			if (_dragState.TabItem == null)
+			if (tabItem == null)
 				return;
 
-			_dragState.MousePosition = e.GetPosition(this);
-			_dragState.DragDistance = 0;
+			DragState = new DragStateInfo(tabItem, Items.IndexOf(tabItem), e.GetPosition(this));
 
 			// TODO: Do we want to make the dragged item the selected one?
 			// SelectedItem = _dragState.TabItem;
@@ -201,33 +212,33 @@ namespace WpfDockingManager
 
 		private void OnPreviewMouseMove(object sender, MouseEventArgs e)
 		{
-			if (e.LeftButton != MouseButtonState.Pressed || _dragState.TabItem == null)
+			if (e.LeftButton != MouseButtonState.Pressed || DragState.TabItem == null)
 				return;
 
-			if (_dragState.IsDragging)
+			if (DragState.IsDragging)
 				return;
 
 			var curPos = e.GetPosition(this);
 			Point p = new Point(
-							curPos.X - _dragState.MousePosition.X,
-							curPos.Y - _dragState.MousePosition.Y
+							curPos.X - DragState.MousePosition.X,
+							curPos.Y - DragState.MousePosition.Y
 						);
 			var dist = Math.Sqrt(p.X*p.X + p.Y*p.Y);
 
 			// Only start dragging if the user moved the mouse a certain distance.
-			if (dist < DragState.DefaultStartDragDistance)
+			if (dist < DragStateInfo.DefaultStartDragDistance)
 				return;
 
 			var ev = new DragTabItemEventArgs(ItemStartDraggingEventEvent)
 			{
-				TabItem = _dragState.TabItem,
-				SourceIndex = _dragState.TabIndex,
+				TabItem = DragState.TabItem,
+				SourceIndex = DragState.TabIndex,
 				TargetIndex = -1
 			};
 			RaiseEvent(ev);
 			if (ev.Cancel)
 			{
-				_dragState = new DragState();
+				DragState = new DragStateInfo();
 				return;
 			}
 		}
@@ -264,21 +275,16 @@ namespace WpfDockingManager
 		{
 			var tabControl = (TabControl)sender;
 			TabItem? targetTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
-			TabItem draggedItem = (TabItem)e.Data.GetData(typeof(TabItem));
 
 			int targetIndex = -1;
-			int draggedIndex = -1;
 
-			if (targetTabItem != null && draggedItem != null && targetTabItem != draggedItem)
-			{
+			if (targetTabItem != null && targetTabItem != DragState.TabItem)
 				targetIndex = tabControl.Items.IndexOf(targetTabItem);
-				draggedIndex = tabControl.Items.IndexOf(draggedItem);
-			}
 
 			var ev = new DragTabItemEventArgs(ItemStopDraggingEventEvent)
 			{
-				TabItem = _dragState.TabItem,
-				SourceIndex = draggedIndex,
+				TabItem = DragState.TabItem,
+				SourceIndex = DragState.TabIndex,
 				TargetIndex = targetIndex
 			};
 			RaiseEvent(ev);

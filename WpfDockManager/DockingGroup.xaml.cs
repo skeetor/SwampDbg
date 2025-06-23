@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -20,12 +21,12 @@ namespace WpfDockingManager
 			DependencyProperty.Register("TabHeight", typeof(double), typeof(DockingGroup),
 				new PropertyMetadata(double.NaN));
 
-		public static readonly DependencyProperty DockAnchorProperty =
-			DependencyProperty.Register("DockAnchor", typeof(string), typeof(DockingGroup),
-				new PropertyMetadata(""));
-
 		public static readonly DependencyProperty CloseTabCommandProperty =
 			DependencyProperty.Register("CloseTabCommand", typeof(ICommand), typeof(DockingGroup));
+
+		public static readonly DependencyProperty DockAnchorProperty = DockingPanel.DockAnchorProperty;
+		public static readonly DependencyProperty DockPositionProperty = DockingPanel.DockPositionProperty;
+		public static readonly DependencyProperty DockTargetProperty = DockingPanel.DockTargetProperty;
 
 		public Dock TabPosition
 		{
@@ -45,16 +46,28 @@ namespace WpfDockingManager
 			set { SetValue(TabHeightProperty, value); }
 		}
 
-		public string DockAnchor
-		{
-			get { return (string)GetValue(DockAnchorProperty); }
-			set { SetValue(DockAnchorProperty, value); }
-		}
-
 		public ICommand CloseTabCommand
 		{
 			get { return (ICommand)GetValue(CloseTabCommandProperty); }
 			set { SetValue(CloseTabCommandProperty, value); }
+		}
+
+		public string DockAnchor
+		{
+			get { return DockingPanel.GetDockAnchor(this); }
+			set { DockingPanel.SetDockAnchor(this, value); }
+		}
+
+		public DockingPosition DockPosition
+		{
+			get { return DockingPanel.GetDockPosition(this); }
+			set { DockingPanel.SetDockPosition(this, value); }
+		}
+
+		public string DockTarget
+		{
+			get { return DockingPanel.GetDockTarget(this); }
+			set { DockingPanel.SetDockTarget(this, value); }
 		}
 		#endregion Properties
 

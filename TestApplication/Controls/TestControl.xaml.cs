@@ -12,14 +12,14 @@ namespace TestApplication.Controls
 	{
 		private static int InstanceCounter = 0;
 
-		public static Dictionary<string, DockPosition> TypeNames =
-			new Dictionary<string, DockPosition>()
+		public static Dictionary<string, DockingPosition> TypeNames =
+			new Dictionary<string, DockingPosition>()
 			{
-				[nameof(DockPosition.Top)] = DockPosition.Top,
-				[nameof(DockPosition.Bottom)] = DockPosition.Bottom,
-				[nameof(DockPosition.Left)] = DockPosition.Left,
-				[nameof(DockPosition.Right)] = DockPosition.Right,
-				["Center"] = DockPosition.None
+				[nameof(DockingPosition.Top)] = DockingPosition.Top,
+				[nameof(DockingPosition.Bottom)] = DockingPosition.Bottom,
+				[nameof(DockingPosition.Left)] = DockingPosition.Left,
+				[nameof(DockingPosition.Right)] = DockingPosition.Right,
+				["Center"] = DockingPosition.None
 			};
 
 		public TestControl()
@@ -67,7 +67,7 @@ namespace TestApplication.Controls
 			if (targetName == "Floating")
 			{
 				var element = TestControl.CreateInstance();
-				dockPanel.DockingFloat(element, DockPosition.None);
+				dockPanel.DockingFloat(element, DockingPosition.None);
 				return;
 			}
 

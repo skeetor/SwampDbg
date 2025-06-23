@@ -44,20 +44,20 @@ namespace WpfDockingManager
 		// all properties.
 		private LayoutItemList? LayoutItems { get; set; }
 
-		private Dictionary<string, DockingGroup> DockGroups = new Dictionary<string, DockingGroup>();
+		public static Dictionary<string, UIElement> DockingAnchors { get; } = new();
 		private DockingSplitter RootSplitter = new();
 
-		#region Dock property
+		#region DockPosition property
 		//public static readonly DependencyProperty DockProperty =
 		//	DockPanel.DockProperty.AddOwner(typeof(DockingPanel));
 		//[CommonDependencyProperty]
-		public static readonly DependencyProperty DockProperty =
+		public static readonly DependencyProperty DockPositionProperty =
 				DependencyProperty.RegisterAttached(
-						"Dock",
-						typeof(DockPosition),
+						"DockPosition",
+						typeof(DockingPosition),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							DockPosition.None,
+							DockingPosition.None,
 							new PropertyChangedCallback(OnDockChanged)
 						),
 						new ValidateValueCallback(IsValidDock)
@@ -65,13 +65,14 @@ namespace WpfDockingManager
 
 		internal static bool IsValidDock(object o)
 		{
-			DockPosition dock = (DockPosition)o;
+			DockingPosition dock = (DockingPosition)o;
 
-			return dock == DockPosition.None
-					|| dock == DockPosition.Left
-					|| dock == DockPosition.Top
-					|| dock == DockPosition.Right
-					|| dock == DockPosition.Bottom
+			return dock == DockingPosition.None
+					|| dock == DockingPosition.Left
+					|| dock == DockingPosition.Top
+					|| dock == DockingPosition.Right
+					|| dock == DockingPosition.Bottom
+					|| dock == DockingPosition.Floating
 					;
 		}
 
@@ -81,8 +82,8 @@ namespace WpfDockingManager
 			//if (child == null)
 			//	return;
 
-			//DockPosition dock = (DockPosition)e.OldValue;
-			//if ((DockPosition)e.OldValue == DockPosition.None && (DockPosition)e.NewValue != DockPosition.None)
+			//DockingPosition dock = (DockingPosition)e.OldValue;
+			//if ((DockingPosition)e.OldValue == DockingPosition.None && (DockingPosition)e.NewValue != DockingPosition.None)
 			//{
 			//	DockingPanel? p = VisualTreeHelper.GetParent(child) as DockingPanel;
 			//	if (p == null)
@@ -92,18 +93,18 @@ namespace WpfDockingManager
 			//}
 		}
 
-		public static DockPosition GetDock(UIElement element)
+		public static DockingPosition GetDockPosition(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (DockPosition)element.GetValue(DockProperty);
+			return (DockingPosition)element.GetValue(DockPositionProperty);
 		}
 
-		public static void SetDock(UIElement element, DockPosition value)
+		public static void SetDockPosition(UIElement element, DockingPosition value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			element.SetValue(DockProperty, value);
+			element.SetValue(DockPositionProperty, value);
 		}
-		#endregion Dock property
+		#endregion DockPosition property
 		#region DockAnchor property
 		public static readonly DependencyProperty DockAnchorProperty =
 				DependencyProperty.RegisterAttached(
@@ -124,6 +125,38 @@ namespace WpfDockingManager
 		public static void SetDockAnchor(UIElement element, string value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
+
+			if (DockingAnchors.ContainsKey(value))
+				throw new InvalidOperationException("DockingAnchor name '" + value + "' already used.");
+
+			UIElement? existingElement = null;
+			string? existingKey = null;
+
+			foreach (KeyValuePair<string, UIElement> entry in DockingAnchors)
+			{
+				if (entry.Value == element)
+				{
+					existingElement = entry.Value;
+					existingKey = entry.Key;
+					break;
+				}
+			}
+
+			if (existingElement == null)
+			{
+				DockingAnchors.Add(value, element);
+				element.SetValue(DockAnchorProperty, value);
+				return;
+			}
+
+			// If the new value is empty, we remove the entry from the grouplist.
+			if (value.Equals(""))
+				DockingAnchors.Remove(existingKey!);
+			else
+			{
+				DockingAnchors.Add(value, element);
+			}
+
 			element.SetValue(DockAnchorProperty, value);
 		}
 		#endregion DockAnchor property
@@ -291,19 +324,6 @@ namespace WpfDockingManager
 
 		public bool IsEmpty() => RootSplitter.IsEmpty();
 
-		private void Refresh(UIElement child)
-		{
-			// TODO: This is an ugly hack, because OnVisualChildrenChanged is called before the
-			// attached properties are set, so we don't know where the child should be positioned.
-			// It seems there is no way to enforce an update, so we remove the child and reinsert it.
-			//if (InternalChildren.Count == 0)
-			//	return;
-
-			//var child = InternalChildren[0];
-			InternalChildren.Remove(child as UIElement);
-			InternalChildren.Add(child as UIElement);
-		}
-
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
 			bool valid = false;
@@ -340,9 +360,9 @@ namespace WpfDockingManager
 				ArgumentNullException.ThrowIfNull(element);
 
 			var nm = GetDockTarget(element);
-			DockingGroup? target = FindAnchor(nm);
+			var target = FindAnchor(nm);
 
-			var dock = GetDock(element);
+			var dock = GetDockPosition(element);
 			var index = GetDockIndex(element);
 
 			var floating = GetDockFloating(element);
@@ -379,19 +399,19 @@ namespace WpfDockingManager
 			if (element == null)
 				return;
 
-			element.ClearValue(DockProperty);
+			element.ClearValue(DockPositionProperty);
 			element.ClearValue(DockAnchorProperty);
 			element.ClearValue(DockIndexProperty);
 		}
 
-		private DockingGroup? FindAnchor(string? group)
+		private UIElement? FindAnchor(string? group)
 		{
 			if (group == null || group.Length == 0)
 				return null;
 
 			try
 			{
-				return DockGroups[group];
+				return DockingAnchors[group];
 			}
 			catch
 			{
@@ -423,9 +443,9 @@ namespace WpfDockingManager
 					continue;
 
 				var nm = GetDockTarget(element);
-				DockingGroup? target = FindAnchor(nm);
+				var target = FindAnchor(nm);
 
-				var dock = GetDock(element);
+				var dock = GetDockPosition(element);
 				var index = GetDockIndex(element);
 
 				var floating = GetDockFloating(element);
@@ -467,7 +487,7 @@ namespace WpfDockingManager
 				tabControl = new DockingGroup();
 				var nm = GetDockAnchor(element);
 				if (nm.Length > 0)
-					DockGroups[nm] = tabControl;
+					DockingAnchors[nm] = tabControl;
 			}
 
 			var title = GetDockTitle(element);
@@ -489,7 +509,7 @@ namespace WpfDockingManager
 			return tabControl;
 		}
 
-		public void DockElement(UIElement element, DockPosition dock, UIElement? target = null, int index = -1)
+		public void DockElement(UIElement element, DockingPosition dock, UIElement? target = null, int index = -1)
 		{
 			if (element == target)
 				throw new ArgumentException("Can not dock an element on itself!");
@@ -500,17 +520,17 @@ namespace WpfDockingManager
 
 			if (IsEmpty())
 			{
-				if (dock is DockPosition.Top or DockPosition.Bottom)
+				if (dock is DockingPosition.Top or DockingPosition.Bottom)
 					RootSplitter.Aligned = Alignment.Horizontal;
-				else if (dock is DockPosition.Left or DockPosition.Right)
+				else if (dock is DockingPosition.Left or DockingPosition.Right)
 					RootSplitter.Aligned = Alignment.Vertical;
 
-				dock = DockPosition.None;
+				dock = DockingPosition.None;
 			}
 
 			switch (dock)
 			{
-				case DockPosition.None:
+				case DockingPosition.None:
 				{
 					// If an element should be added to the center we need a target to add the item to.
 					// If the panel is empty, we can create a new tab automatically.
@@ -531,7 +551,7 @@ namespace WpfDockingManager
 				break;
 
 				// Dock to left of target
-				case DockPosition.Left:
+				case DockingPosition.Left:
 				{
 					var tabCtrl = target as DockingGroup;
 					if (tabCtrl == null && target != null)
@@ -542,7 +562,7 @@ namespace WpfDockingManager
 				break;
 
 				// Dock to right of target
-				case DockPosition.Right:
+				case DockingPosition.Right:
 				{
 					var tabCtrl = target as DockingGroup;
 
@@ -553,7 +573,7 @@ namespace WpfDockingManager
 				}
 				break;
 
-				case DockPosition.Top:
+				case DockingPosition.Top:
 				{
 					var tabCtrl = target as DockingGroup;
 					if (tabCtrl == null && target != null)
@@ -563,7 +583,7 @@ namespace WpfDockingManager
 				}
 				break;
 
-				case DockPosition.Bottom:
+				case DockingPosition.Bottom:
 				{
 					var tabCtrl = target as DockingGroup;
 					if (tabCtrl == null && target != null)
@@ -722,7 +742,7 @@ namespace WpfDockingManager
 			}
 		}
 
-		public IDockingProvider DockingFloat(UIElement element, DockPosition dock, UIElement? target = null, int index = -1, bool show = true, Rect position = default)
+		public IDockingProvider DockingFloat(UIElement element, DockingPosition dock, UIElement? target = null, int index = -1, bool show = true, Rect position = default)
 		{
 			var floating = new FloatingWindow();
 			var dockingPanel = floating.RootDockPanel;

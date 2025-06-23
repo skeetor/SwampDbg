@@ -55,7 +55,7 @@ namespace TestApplication
 
 			if (targetName == "Floating")
 			{
-				dockPanel.DockingFloat(TestControl.CreateInstance(), DockPosition.None);
+				dockPanel.DockingFloat(TestControl.CreateInstance(), DockingPosition.None);
 				return;
 			}
 		
