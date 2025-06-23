@@ -1,9 +1,22 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace WpfDockingManager
 {
+	public class DragState
+	{
+		public const double DefaultStartDragDistance = 7.0;
+
+		public bool IsDragging { get; set; } = false;
+		public TabItem? TabItem { get; set; } = null;
+		public int TabIndex { get; set; } = -1;
+		public Point MousePosition { get; set; } = default(Point);
+		public double DragDistance {  get; set; } = 0;
+	}
+
 	public partial class DragTabControl : TabControl
 	{
 		#region Properties
@@ -65,7 +78,7 @@ namespace WpfDockingManager
 		}
 		#endregion Events
 
-		private TabItem? _draggedTabItem;
+		private DragState _dragState = new DragState();
 
 		public DragTabControl()
 		{
@@ -78,10 +91,11 @@ namespace WpfDockingManager
 
 		private void OnItemStartDraggingHandler(object? sender, DragTabItemEventArgs e)
 		{
-			if (e.Cancel)
+			if (e.Cancel || e.Handled)
 				return;
 
-			_draggedTabItem = e.TabItem;
+			DragDrop.DoDragDrop(this, e.TabItem, DragDropEffects.Move);
+			SelectedItem = e.TabItem;
 		}
 
 		private void OnItemStopDraggingHandler(object? sender, DragTabItemEventArgs e)
@@ -107,7 +121,7 @@ namespace WpfDockingManager
 			// blank for some reason. So we have to set the index accordingly.
 			// https://stackoverflow.com/questions/33974939/difficulty-with-tabcontrol-tabitem-refresh
 			Dispatcher.BeginInvoke((Action)(() => SelectedIndex = e.TargetIndex));
-			_draggedTabItem = null;
+			_dragState = new DragState();
 		}
 
 		private void OnItemCloseHandler(object? sender, DragTabItemEventArgs e)
@@ -162,76 +176,108 @@ namespace WpfDockingManager
 
 		private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
-			var tabControl = (TabControl)sender;
-			var draggedTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			_dragState = new DragState();
+			_dragState.TabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
 
-			if (draggedTabItem != null)
-			{
-				var ev = new DragTabItemEventArgs(ItemStartDraggingEventEvent)
-				{
-					TabItem = draggedTabItem,
-					SourceIndex = Items.IndexOf(draggedTabItem),
-					TargetIndex = -1
-				};
-				RaiseEvent(ev);
-				if (ev.Cancel)
-					return;
+			if (_dragState.TabItem == null)
+				return;
 
-				DragDrop.DoDragDrop(tabControl, _draggedTabItem, DragDropEffects.Move);
-				tabControl.SelectedItem = _draggedTabItem;
-			}
+			_dragState.MousePosition = e.GetPosition(this);
+			_dragState.DragDistance = 0;
+
+			SelectedItem = _dragState.TabItem;
 		}
 
+		static int line = 0;
 		private void OnPreviewMouseMove(object sender, MouseEventArgs e)
 		{
-			if (e.LeftButton == MouseButtonState.Pressed && _draggedTabItem == null)
+			if (e.LeftButton != MouseButtonState.Pressed || _dragState.TabItem == null)
+				return;
+
+			if (_dragState.IsDragging)
+				return;
+
+			var curPos = e.GetPosition(this);
+			Point p = new Point(
+							curPos.X - _dragState.MousePosition.X,
+							curPos.Y - _dragState.MousePosition.Y
+						);
+			var dist = Math.Sqrt(p.X*p.X + p.Y*p.Y);
+
+			// Only start dragging if the user moved the mouse a certain distance.
+			if (dist < DragState.DefaultStartDragDistance)
+				return;
+
+			var ev = new DragTabItemEventArgs(ItemStartDraggingEventEvent)
 			{
-				var tabControl = (TabControl)sender;
-				TabItem? tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
-				if (tabItem != null)
-				{
-					_draggedTabItem = tabItem;
-					DragDrop.DoDragDrop(tabControl, _draggedTabItem, DragDropEffects.Move);
-					tabControl.SelectedItem = _draggedTabItem;
-				}
+				TabItem = _dragState.TabItem,
+				SourceIndex = _dragState.TabIndex,
+				TargetIndex = -1
+			};
+			RaiseEvent(ev);
+			if (ev.Cancel)
+			{
+				_dragState = new DragState();
+				return;
 			}
+
+			_dragState.IsDragging = true;
+			Debug.WriteLine("Dragging started: " + _dragState.IsDragging.ToString());
+
+			// TODO: Do we want a drag moving event here?
 		}
 
 		private void OnDragEnter(object sender, DragEventArgs e)
 		{
-			if (e.Data.GetDataPresent(typeof(TabItem)))
+			var tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			if (tabItem != null)
 			{
+				Debug.WriteLine((++line).ToString() + " Drag Move");
 				e.Effects = DragDropEffects.Move;
 			}
 			else
 			{
+				Debug.WriteLine((++line).ToString() + " Drag None");
 				e.Effects = DragDropEffects.None;
 			}
+
+			//Debug.WriteLine((++line).ToString() + " Drag Test: " + IsMouseOver.ToString());
+
+			//if (e.Data.GetDataPresent(typeof(TabItem)))
+			//{
+			//	Debug.WriteLine((++line).ToString() + " Drag Move");
+			//	e.Effects = DragDropEffects.Move;
+			//}
+			//else
+			//{
+			//	Debug.WriteLine((++line).ToString() + " Drag None");
+			//	e.Effects = DragDropEffects.None;
+			//}
 		}
 
 		private void OnDrop(object sender, DragEventArgs e)
 		{
-			var tabControl = (TabControl)sender;
-			TabItem? targetTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
-			TabItem draggedItem = (TabItem)e.Data.GetData(typeof(TabItem));
+			//var tabControl = (TabControl)sender;
+			//TabItem? targetTabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
+			//TabItem draggedItem = (TabItem)e.Data.GetData(typeof(TabItem));
 
-			int targetIndex = -1;
-			int draggedIndex = -1;
+			//int targetIndex = -1;
+			//int draggedIndex = -1;
 
-			if (targetTabItem != null && draggedItem != null && targetTabItem != draggedItem)
-			{
-				targetIndex = tabControl.Items.IndexOf(targetTabItem);
-				draggedIndex = tabControl.Items.IndexOf(draggedItem);
-			}
+			//if (targetTabItem != null && draggedItem != null && targetTabItem != draggedItem)
+			//{
+			//	targetIndex = tabControl.Items.IndexOf(targetTabItem);
+			//	draggedIndex = tabControl.Items.IndexOf(draggedItem);
+			//}
 
-			var ev = new DragTabItemEventArgs(ItemStopDraggingEventEvent)
-			{
-				TabItem = _draggedTabItem,
-				SourceIndex = draggedIndex,
-				TargetIndex = targetIndex
-			};
-			_draggedTabItem = null;
-			RaiseEvent(ev);
+			//var ev = new DragTabItemEventArgs(ItemStopDraggingEventEvent)
+			//{
+			//	TabItem = _draggedTabItem,
+			//	SourceIndex = draggedIndex,
+			//	TargetIndex = targetIndex
+			//};
+			//_draggedTabItem = null;
+			//RaiseEvent(ev);
 		}
 	}
 }

@@ -64,7 +64,7 @@
 			<Style.Triggers>
 				<!-- Depending on the orientation, we have to place the close button in the correct place.
 					This means, we have to use rows or columns and put the button after the text. This
-					can not be done in a nice way as the grid can not conditionally create columns or rows
+					can not be done in a nice way as the grid can not conditionally create columns OR rows
 					so we have to duplicate the style with the different setups. We can at least reduce it
 					to a single duplicate, using converters to place the button in the correct spot.
 				-->
