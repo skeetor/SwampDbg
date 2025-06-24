@@ -70,6 +70,7 @@
 					to a single duplicate, using converters to place the button in the correct spot.
 				-->
 				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=GridAdjustment}}" Value="Horizontal">
+					<Setter Property="Height" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="TabItem">
@@ -121,6 +122,7 @@
 					</Setter>
 				</DataTrigger>
 				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=GridAdjustment}}" Value="Vertical">
+					<Setter Property="Width" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="TabItem">
@@ -181,7 +183,6 @@
 				</DataTrigger>
 			</Style.Triggers>
 			<Setter Property="Width" Value="{Binding TabWidth, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
-			<Setter Property="Height" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
 		</Style>
 
 	</TabControl.ItemContainerStyle>

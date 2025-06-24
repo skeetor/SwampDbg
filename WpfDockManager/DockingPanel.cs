@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Xml.Linq;
 using LayoutItemList = WpfDockingManager.UniqueList<WpfDockingManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
 namespace WpfDockingManager
@@ -62,7 +62,6 @@ namespace WpfDockingManager
 						),
 						new ValidateValueCallback(IsValidDock)
 				);
-
 		internal static bool IsValidDock(object o)
 		{
 			DockingPosition dock = (DockingPosition)o;
@@ -75,7 +74,6 @@ namespace WpfDockingManager
 					|| dock == DockingPosition.Floating
 					;
 		}
-
 		private static void OnDockChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
 		{
 			//UIElement? child = depObj as UIElement;
@@ -112,51 +110,22 @@ namespace WpfDockingManager
 						typeof(string),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							""
+							"",
+							new PropertyChangedCallback(OnDockAnchorChanged)
 						)
 					);
-
+		private static void OnDockAnchorChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
+		{
+			UpdateDockAnchor((depObj as UIElement)!, (string)e.NewValue);
+		}
 		public static string GetDockAnchor(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 			return (string)element.GetValue(DockAnchorProperty);
 		}
-
 		public static void SetDockAnchor(UIElement element, string value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-
-			if (DockingAnchors.ContainsKey(value))
-				throw new InvalidOperationException("DockingAnchor name '" + value + "' already used.");
-
-			UIElement? existingElement = null;
-			string? existingKey = null;
-
-			foreach (KeyValuePair<string, UIElement> entry in DockingAnchors)
-			{
-				if (entry.Value == element)
-				{
-					existingElement = entry.Value;
-					existingKey = entry.Key;
-					break;
-				}
-			}
-
-			if (existingElement == null)
-			{
-				if (!value.Equals(""))
-					DockingAnchors.Add(value, element);
-
-				element.SetValue(DockAnchorProperty, value);
-				return;
-			}
-
-			// If the new value is empty, we remove the entry from the grouplist, otherwise
-			// its updated and the previous entry removed.
-			DockingAnchors.Remove(existingKey!);
-			if (!value.Equals(""))
-				DockingAnchors.Add(value, element);
-
 			element.SetValue(DockAnchorProperty, value);
 		}
 		#endregion DockAnchor property
@@ -189,15 +158,21 @@ namespace WpfDockingManager
 						typeof(string),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							""
+							"",
+							new PropertyChangedCallback(OnDockTargetChanged)
 						)
 					);
+		private static void OnDockTargetChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
+		{
+			string value = (string)e.NewValue;
+			if (value.Length > 0 && !DockingAnchors.ContainsKey(value))
+				throw new InvalidOperationException("DockTarget '" + value + "' not defined");
+		}
 		public static string GetDockTarget(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 			return (string)element.GetValue(DockTargetProperty);
 		}
-
 		public static void SetDockTarget(UIElement element, string value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
@@ -324,6 +299,45 @@ namespace WpfDockingManager
 
 		public bool IsEmpty() => RootSplitter.IsEmpty();
 
+		public static void UpdateDockAnchor(UIElement element, string value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+
+			if (DockingAnchors.ContainsKey(value))
+			{
+				var el = DockingAnchors[value];
+				if (el != element)
+					throw new InvalidOperationException("DockingAnchor '" + value + "' already used.");
+			}
+
+			UIElement? existingElement = null;
+			string? existingKey = null;
+
+			foreach (KeyValuePair<string, UIElement> entry in DockingAnchors)
+			{
+				if (entry.Value == element)
+				{
+					existingElement = entry.Value;
+					existingKey = entry.Key;
+					break;
+				}
+			}
+
+			if (existingElement == null)
+			{
+				if (!value.Equals(""))
+					DockingAnchors.Add(value, element);
+
+				return;
+			}
+
+			// If the new value is empty, we remove the entry from the grouplist, otherwise
+			// its updated and the previous entry removed.
+			DockingAnchors.Remove(existingKey!);
+			if (!value.Equals(""))
+				DockingAnchors.Add(value, element);
+		}
+
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
 			bool valid = false;
@@ -339,17 +353,14 @@ namespace WpfDockingManager
 				AddItem((visualAdded as UIElement)!);
 			}
 
+			if (!valid && visualAdded != null)
+				throw new InvalidOperationException("DockingPanel only accepts DockingGroup or DockingSplitter as a child object.");
+
 			if (visualRemoved is DockingSplitter)
 			{
-				valid = true;
 			}
 			else if (visualRemoved is DockingGroup)
-			{
-				valid = true;
-			}
-
-			if (!valid)
-				throw new InvalidOperationException("DockingPanel only accepts DockingGroup as child.");
+				UndockElement(visualRemoved as UIElement);
 
 			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
 		}
@@ -361,6 +372,8 @@ namespace WpfDockingManager
 
 			var nm = GetDockTarget(element);
 			var target = FindAnchor(nm);
+			if (target == null && nm.Length > 0)
+				throw new InvalidOperationException("Target '" + nm + "' not defined");
 
 			var dock = GetDockPosition(element);
 			var index = GetDockIndex(element);

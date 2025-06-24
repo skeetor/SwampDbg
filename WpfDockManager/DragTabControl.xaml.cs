@@ -32,22 +32,12 @@ namespace WpfDockingManager
 	public partial class DragTabControl : TabControl
 	{
 		#region Properties
-		public static readonly DependencyProperty TabWidthProperty =
-			DependencyProperty.Register("TabWidth", typeof(double), typeof(DragTabControl),
-				new PropertyMetadata(double.NaN));
-
 		public static readonly DependencyProperty TabHeightProperty =
 			DependencyProperty.Register("TabHeight", typeof(double), typeof(DragTabControl),
 				new PropertyMetadata(double.NaN));
 
 		public static readonly DependencyProperty CloseTabCommandProperty =
 			DependencyProperty.Register("CloseTabCommand", typeof(ICommand), typeof(DragTabControl));
-
-		public double TabWidth
-		{
-			get { return (double)GetValue(TabWidthProperty); }
-			set { SetValue(TabWidthProperty, value); }
-		}
 
 		public double TabHeight
 		{
