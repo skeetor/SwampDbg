@@ -12,8 +12,6 @@
 		<local:TabItemRotation x:Key="TabItemRotation"/>
 	</Grid.Resources>
 
-	<!-- <TextBlock Text="{Binding ElementName=dockingGroupControl, Path=TabPosition}"></TextBlock> -->
-
 	<local:DragTabControl x:Name="_tabControl" TabStripPlacement="{Binding ElementName=dockingGroupControl, Path=TabPosition}">
 	</local:DragTabControl>
 

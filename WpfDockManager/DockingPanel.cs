@@ -144,18 +144,18 @@ namespace WpfDockingManager
 
 			if (existingElement == null)
 			{
-				DockingAnchors.Add(value, element);
+				if (!value.Equals(""))
+					DockingAnchors.Add(value, element);
+
 				element.SetValue(DockAnchorProperty, value);
 				return;
 			}
 
-			// If the new value is empty, we remove the entry from the grouplist.
-			if (value.Equals(""))
-				DockingAnchors.Remove(existingKey!);
-			else
-			{
+			// If the new value is empty, we remove the entry from the grouplist, otherwise
+			// its updated and the previous entry removed.
+			DockingAnchors.Remove(existingKey!);
+			if (!value.Equals(""))
 				DockingAnchors.Add(value, element);
-			}
 
 			element.SetValue(DockAnchorProperty, value);
 		}
