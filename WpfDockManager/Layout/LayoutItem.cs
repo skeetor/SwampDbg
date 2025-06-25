@@ -1,6 +1,6 @@
 ﻿
 using System.Windows;
-using WpfDockingManager;
+using WpfDockingManager.Collections;
 
 namespace WpfDockingManager.Layout
 {

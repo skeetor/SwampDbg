@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Xml.Linq;
-using LayoutItemList = WpfDockingManager.UniqueList<WpfDockingManager.Layout.LayoutItem, System.Windows.DependencyObject>;
+using LayoutItemList = WpfDockingManager.Collections.UniqueList<WpfDockingManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
 namespace WpfDockingManager
 {
@@ -295,6 +295,22 @@ namespace WpfDockingManager
 		{
 			RootSplitter.Aligned = Alignment.Vertical;
 			Children.Add(RootSplitter);
+			LayoutItems = new();
+			Loaded += OnLoadedEvent;
+		}
+
+		private void OnLoadedEvent(object? sender, EventArgs e)
+		{
+			if (LayoutItems == null)
+				return;
+
+			var items = LayoutItems;
+
+			// These items are only used during initialization. Once this is done
+			// We can no longer rely on the references anyway, as they might have been
+			// destroyed or moved, so we discard them.
+			LayoutItems = null;
+			InitLayout(items);
 		}
 
 		public bool IsEmpty() => RootSplitter.IsEmpty();
@@ -340,58 +356,15 @@ namespace WpfDockingManager
 
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
-			bool valid = false;
-
-			if (visualAdded is DockingSplitter)
+			if (LayoutItems != null)
 			{
-				valid = true;
+				LayoutItems += visualAdded;
+				LayoutItems -= visualRemoved;
 			}
-
-			if (visualAdded is DockingGroup)
-			{
-				valid = true;
-				AddItem((visualAdded as UIElement)!);
-			}
-
-			if (!valid && visualAdded != null)
-				throw new InvalidOperationException("DockingPanel only accepts DockingGroup or DockingSplitter as a child object.");
-
-			if (visualRemoved is DockingSplitter)
-			{
-			}
-			else if (visualRemoved is DockingGroup)
-				UndockElement(visualRemoved as UIElement);
 
 			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
 		}
 
-		protected void AddItem(UIElement element)
-		{
-			if (element == null)
-				ArgumentNullException.ThrowIfNull(element);
-
-			var nm = GetDockTarget(element);
-			var target = FindAnchor(nm);
-			if (target == null && nm.Length > 0)
-				throw new InvalidOperationException("Target '" + nm + "' not defined");
-
-			var dock = GetDockPosition(element);
-			var index = GetDockIndex(element);
-
-			var floating = GetDockFloating(element);
-			if (floating is Alignment.Vertical or Alignment.Horizontal)
-			{
-				var rect = GetFloatingRectangle(element);
-				DockingFloat(element, dock, target, index, true, rect);
-			}
-			else
-				DockElement(element, dock, target, index);
-
-			// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
-			//ResetProperties(element);
-		}
-
-		protected void RemoveItem(UIElement element) => UndockElement(element);
 
 		protected override Size MeasureOverride(Size availableSize)
 		{
@@ -405,16 +378,6 @@ namespace WpfDockingManager
 			RootSplitter.Arrange(new Rect(new Point(0, 0), finalSize));
 
 			return finalSize;
-		}
-
-		private static void ResetProperties(UIElement? element)
-		{
-			if (element == null)
-				return;
-
-			element.ClearValue(DockPositionProperty);
-			element.ClearValue(DockAnchorProperty);
-			element.ClearValue(DockIndexProperty);
 		}
 
 		private UIElement? FindAnchor(string? group)
@@ -455,34 +418,10 @@ namespace WpfDockingManager
 				if (element == null)
 					continue;
 
-				var nm = GetDockTarget(element);
-				var target = FindAnchor(nm);
-
-				var dock = GetDockPosition(element);
-				var index = GetDockIndex(element);
-
-				var floating = GetDockFloating(element);
-				if (floating is Alignment.Vertical or Alignment.Horizontal)
-				{
-					var rect = GetFloatingRectangle(element);
-					DockingFloat(element, dock, target, index, true, rect);
-				}
-				else
-					DockElement(element, dock, target, index);
-
-				// TODO: We don't really need those properties, once the item is docked,so does it make sense to remove them, or should we keep them?
-				//ResetProperties(element);
+				DockElement(element);
 			}
 
-			// We have to set the lengths of the items, after the layout has been estalished.
-			// This can not be done directly, because the splitters can not be moved appropriately
-			// and when new elements are added to the splitter, it would get disrupted.
-			//int[] cols = { 100, 500, 20 };
-			//for (int i = 0; i < cols.Length; i++)
-			//	_root.SetLength(i * 2, cols[i]);
-			//RootSplitter.DumpGrid();
-
-			InvalidateMeasure();
+			//InvalidateMeasure();
 		}
 
 		/// <summary>
@@ -520,6 +459,29 @@ namespace WpfDockingManager
 			tabControl.InsertItem(element, title, index);
 
 			return tabControl;
+		}
+
+		public void DockElement(UIElement element)
+		{
+			if (element == null)
+				ArgumentNullException.ThrowIfNull(element);
+
+			var nm = GetDockTarget(element);
+			var target = FindAnchor(nm);
+			if (target == null && nm.Length > 0)
+				throw new InvalidOperationException("Target '" + nm + "' not defined");
+
+			var dock = GetDockPosition(element);
+			var index = GetDockIndex(element);
+
+			var floating = GetDockFloating(element);
+			if (floating is Alignment.Vertical or Alignment.Horizontal)
+			{
+				var rect = GetFloatingRectangle(element);
+				DockingFloat(element, dock, target, index, true, rect);
+			}
+			else
+				DockElement(element, dock, target, index);
 		}
 
 		public void DockElement(UIElement element, DockingPosition dock, UIElement? target = null, int index = -1)

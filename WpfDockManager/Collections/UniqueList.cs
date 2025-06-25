@@ -1,4 +1,4 @@
-﻿namespace WpfDockingManager
+﻿namespace WpfDockingManager.Collections
 {
 	public interface ITypeConverter<T, U>
 	{
