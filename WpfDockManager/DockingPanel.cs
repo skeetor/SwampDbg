@@ -310,7 +310,7 @@ namespace WpfDockingManager
 			// We can no longer rely on the references anyway, as they might have been
 			// destroyed or moved, so we discard them.
 			LayoutItems = null;
-			InitLayout(items);
+			CreateLayout(items);
 		}
 
 		public bool IsEmpty() => RootSplitter.IsEmpty();
@@ -365,7 +365,6 @@ namespace WpfDockingManager
 			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
 		}
 
-
 		protected override Size MeasureOverride(Size availableSize)
 		{
 			RootSplitter.Measure(availableSize);
@@ -397,24 +396,20 @@ namespace WpfDockingManager
 		}
 
 		/// <summary>
-		/// Build the layout for the specified objects in the list. The items
-		/// are removed from the list, so when this function returns, the list
-		/// will be empty.
+		/// Build the layout for the specified objects in the list.
 		/// </summary>
 		/// <param name="items"></param>
 		/// <exception cref="InvalidOperationException"></exception>
-		protected void InitLayout(LayoutItemList items)
+		public void CreateLayout(LayoutItemList items)
 		{
-			// LayoutItems exists only during initialization and this function should not be called once
-			// everything is set up. Use the DockElement instead.
 			if (items == null)
 				return;
 
 			// When an item is docked, we have to reparent it to our own control. Because of this, we get
 			// a VisualChildrenChanged event which causes the item be removed from this layoutlist as well.
-			while (items.Count > 0)
+			foreach (var item in items)
 			{
-				var element = items.Pop(0)!.Object as UIElement;
+				var element = item.Object as UIElement;
 				if (element == null)
 					continue;
 
@@ -461,6 +456,11 @@ namespace WpfDockingManager
 			return tabControl;
 		}
 
+		/// <summary>
+		/// DockElement where all relevant properties are set, so the item can be docked.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <exception cref="InvalidOperationException"></exception>
 		public void DockElement(UIElement element)
 		{
 			if (element == null)
@@ -509,11 +509,8 @@ namespace WpfDockingManager
 				{
 					// If an element should be added to the center we need a target to add the item to.
 					// If the panel is empty, we can create a new tab automatically.
-					if (target == null)
-					{
-						if (!IsEmpty())
-							target = RootSplitter.GetChild(0);
-					}
+					if (target == null && !IsEmpty())
+						target = RootSplitter.GetChild(0);
 
 					//var tabControl = CreateTabElement(item, tabControl: target as DockingGroup, index: index);
 					var tabControl = (item as DockingGroup)!;
@@ -532,7 +529,7 @@ namespace WpfDockingManager
 					if (tabCtrl == null && target != null)
 						throw new InvalidOperationException("Target is not a DockingGroup");
 
-					VerticalSplit(item, true, target as DockingGroup);
+					VerticalSplit(item, true, tabCtrl);
 				}
 				break;
 
@@ -540,11 +537,10 @@ namespace WpfDockingManager
 				case DockingPosition.Right:
 				{
 					var tabCtrl = target as DockingGroup;
-
 					if (tabCtrl == null && target != null)
 						throw new InvalidOperationException("Target is not a DockingGroup");
 
-					VerticalSplit(item, false, target as DockingGroup);
+					VerticalSplit(item, false, tabCtrl);
 				}
 				break;
 
@@ -554,7 +550,7 @@ namespace WpfDockingManager
 					if (tabCtrl == null && target != null)
 						throw new InvalidOperationException("Target is not a DockingGroup");
 
-					HorizontalSplit(item, true, target as DockingGroup);
+					HorizontalSplit(item, true, tabCtrl);
 				}
 				break;
 
@@ -587,12 +583,17 @@ namespace WpfDockingManager
 			}
 		}
 
-		protected void HorizontalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, Alignment.Horizontal, target);
+		protected void HorizontalSplit(FrameworkElement element, bool before, DockingGroup? target = null)
+			=> Split(element, before, Alignment.Horizontal, target);
 
-		protected void VerticalSplit(FrameworkElement element, bool before, DockingGroup? target = null) => Split(element, before, Alignment.Vertical, target);
+		protected void VerticalSplit(FrameworkElement element, bool before, DockingGroup? target = null)
+			=> Split(element, before, Alignment.Vertical, target);
 
 		protected void Split(FrameworkElement element, bool before, Alignment axis, DockingGroup? target = null)
 		{
+			if (target == element)
+				throw new InvalidOperationException("Invalid target points to itself.");
+
 			DockingSplitter? parent;
 			int index;
 
@@ -615,7 +616,16 @@ namespace WpfDockingManager
 			}
 
 			// When we are splitting, the item will always need a new DockingGroup
-			var tabControl = CreateTabElement(element, tabControl: null);
+			DockingGroup tabControl = null!;
+
+			if (element is DockingGroup)
+			{
+				DockingHelper.RemoveElementFromItsParent(element);
+				tabControl = (DockingGroup)element;
+			}
+			else
+				tabControl = CreateTabElement(element, tabControl: null);
+
 			parent.Insert(tabControl, index);
 
 			UpdateLength(element, parent, tabControl);

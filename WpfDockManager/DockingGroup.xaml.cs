@@ -27,6 +27,7 @@ namespace WpfDockingManager
 		public static readonly DependencyProperty DockAnchorProperty = DockingPanel.DockAnchorProperty;
 		public static readonly DependencyProperty DockPositionProperty = DockingPanel.DockPositionProperty;
 		public static readonly DependencyProperty DockTargetProperty = DockingPanel.DockTargetProperty;
+		public static readonly DependencyProperty DockLengthProperty = DockingPanel.DockLengthProperty;
 
 		public Dock TabPosition
 		{
@@ -68,6 +69,12 @@ namespace WpfDockingManager
 		{
 			get { return DockingPanel.GetDockTarget(this); }
 			set { DockingPanel.SetDockTarget(this, value); }
+		}
+
+		public GridLength DockLength
+		{
+			get { return DockingPanel.GetDockLength(this); }
+			set { DockingPanel.SetDockLength(this, value); }
 		}
 		#endregion Properties
 

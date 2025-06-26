@@ -68,7 +68,7 @@
 				<Button DMNS:DockingPanel.DockTitle="Testbutton2">Testbutton2</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton3">Testbutton3</Button>
 			</DMNS:DockingGroup>
-			<DMNS:DockingGroup TabPosition="Top" DockTarget="PropertyGroup" DockPosition="Right">
+			<DMNS:DockingGroup TabPosition="Top" DockTarget="PropertyGroup" DockPosition="Right" DockLength="200">
 				<Button DMNS:DockingPanel.DockTitle="Testbutton4">Testbutton4</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton5">Testbutton5</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton6">Testbutton6</Button>
