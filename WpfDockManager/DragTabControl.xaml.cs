@@ -11,18 +11,19 @@ namespace WpfDockingManager
 		public const double DefaultStartDragDistance = 7.0;
 
 		public bool IsDragging { get; set; } = false;
+		public DragTabControl? Owner { get; } = null;
 		public TabItem? TabItem { get; } = null;
 		public int TabIndex { get; } = -1;
 		public Point MousePosition { get; } = default(Point);
-
 
 		public DragStateInfo()
 		{
 		}
 
-		public DragStateInfo(TabItem? tabItem, int tabIndex, Point mousePosition)
+		public DragStateInfo(DragTabControl? owner, TabItem? tabItem, int tabIndex, Point mousePosition)
 		{
 			IsDragging = false;
+			Owner = owner;
 			TabItem = tabItem;
 			TabIndex = tabIndex;
 			MousePosition = mousePosition;
@@ -194,7 +195,7 @@ namespace WpfDockingManager
 			if (tabItem == null)
 				return;
 
-			DragState = new DragStateInfo(tabItem, Items.IndexOf(tabItem), e.GetPosition(this));
+			DragState = new DragStateInfo(this, tabItem, Items.IndexOf(tabItem), e.GetPosition(this));
 
 			// TODO: Do we want to make the dragged item the selected one?
 			// SelectedItem = _dragState.TabItem;
@@ -238,8 +239,7 @@ namespace WpfDockingManager
 			if (e.Handled)
 				return;
 
-			var tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
-			if (tabItem != null)
+			if (IsDragTarget((DependencyObject)e.OriginalSource))
 				e.Effects = DragDropEffects.Move;
 			else
 				e.Effects = DragDropEffects.None;
@@ -252,13 +252,26 @@ namespace WpfDockingManager
 			if (e.Handled)
 				return;
 
-			var tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
-			if (tabItem != null)
+			if (IsDragTarget((DependencyObject)e.OriginalSource))
 				e.Effects = DragDropEffects.Move;
 			else
 				e.Effects = DragDropEffects.None;
 
 			e.Handled = true;
+		}
+
+		private bool IsDragTarget(DependencyObject element)
+		{
+			var tabItem = DockingHelper.FindParentClass<TabItem>(element);
+			if (tabItem == null)
+				return false;
+
+			// TODO: Element needs to be the item the mouse is currently over.
+			var tabCtrl = DockingHelper.FindParentClass<DragTabControl>(tabItem);
+			if (tabCtrl == null || tabCtrl != this)
+				return false;
+
+			return true;
 		}
 
 		private void OnDrop(object sender, DragEventArgs e)
