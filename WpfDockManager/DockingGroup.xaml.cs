@@ -3,6 +3,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml.Linq;
 
 namespace WpfDockingManager
 {
@@ -28,6 +29,7 @@ namespace WpfDockingManager
 		public static readonly DependencyProperty DockPositionProperty = DockingPanel.DockPositionProperty;
 		public static readonly DependencyProperty DockTargetProperty = DockingPanel.DockTargetProperty;
 		public static readonly DependencyProperty DockLengthProperty = DockingPanel.DockLengthProperty;
+		public static readonly DependencyProperty DockTitleProperty = DockingPanel.DockTitleProperty;
 
 		public Dock TabPosition
 		{
@@ -75,6 +77,12 @@ namespace WpfDockingManager
 		{
 			get { return DockingPanel.GetDockLength(this); }
 			set { DockingPanel.SetDockLength(this, value); }
+		}
+
+		public string DockTitle
+		{
+			get { return DockingPanel.GetDockTitle(this); }
+			set { DockingPanel.SetDockTitle(this, value); }
 		}
 		#endregion Properties
 
@@ -124,9 +132,18 @@ namespace WpfDockingManager
 			get { return _tabControl.Items.Count; }
 		}
 
-		public void InsertItem(object item, string title, int index = -1, bool selected = true)
+		public void InsertItem(UIElement element, int index = -1, bool selected = true)
 		{
-			UIElementCollection c = Children;
+			var title = DockingPanel.GetDockTitle(element);
+			var ti = new TabItem
+			{
+				Header = title,
+				Content = element
+			};
+
+			if (index == -1)
+				index = _tabControl.Items.Count;
+			_tabControl.Items.Insert(index, ti);
 		}
 
 		private void OnCloseButtonEvent(object sender, RoutedEventArgs e)

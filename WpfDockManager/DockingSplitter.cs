@@ -53,8 +53,8 @@ namespace WpfDockingManager
 
 			if (Aligned == Alignment.Vertical)
 				SetColumn(element, index);
-
-			SetRow(element, index);
+			else
+				SetRow(element, index);
 		}
 
 		public UIElement? GetChild(int index)

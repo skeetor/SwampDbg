@@ -160,8 +160,25 @@ namespace WpfDockingManager
 						new FrameworkPropertyMetadata(
 							"",
 							new PropertyChangedCallback(OnDockTargetChanged)
-						)
+						), new ValidateValueCallback(IsValidDockTarget)
 					);
+		internal static bool IsValidDockTarget(object o)
+		{
+			var value = o as string;
+
+
+			if (value == null)
+				return false;
+
+			if (value.Length == 0)
+				return true;
+
+			if (!DockingPanel.DockingAnchors.ContainsKey(value))
+				throw new InvalidOperationException("Invalid target: " + value);
+				//return false;
+
+			return true;
+		}
 		private static void OnDockTargetChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
 		{
 			string value = (string)e.NewValue;
@@ -430,28 +447,9 @@ namespace WpfDockingManager
 			DockingHelper.RemoveElementFromItsParent(element);
 
 			if (tabControl == null)
-			{
 				tabControl = new DockingGroup();
-				var nm = GetDockAnchor(element);
-				if (nm.Length > 0)
-					DockingAnchors[nm] = tabControl;
-			}
 
-			var title = GetDockTitle(element);
-			if (title == null)
-				title = "";
-
-			var ti = new TabItem
-			{
-				Header = title,
-				Content = element
-			};
-
-			//if (index == -1)
-			//	index = tabControl.Items.Count;
-			//tabControl.Items.Insert(index, ti);
-
-			tabControl.InsertItem(element, title, index);
+			tabControl.InsertItem(element, index);
 
 			return tabControl;
 		}
@@ -526,8 +524,8 @@ namespace WpfDockingManager
 				case DockingPosition.Left:
 				{
 					var tabCtrl = target as DockingGroup;
-					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a DockingGroup");
+					//if (tabCtrl == null && target != null)
+					//	throw new InvalidOperationException("Target is not a DockingGroup");
 
 					VerticalSplit(item, true, tabCtrl);
 				}
@@ -537,8 +535,8 @@ namespace WpfDockingManager
 				case DockingPosition.Right:
 				{
 					var tabCtrl = target as DockingGroup;
-					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a DockingGroup");
+					//if (tabCtrl == null && target != null)
+					//	throw new InvalidOperationException("Target is not a DockingGroup");
 
 					VerticalSplit(item, false, tabCtrl);
 				}
@@ -547,8 +545,8 @@ namespace WpfDockingManager
 				case DockingPosition.Top:
 				{
 					var tabCtrl = target as DockingGroup;
-					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a DockingGroup");
+					//if (tabCtrl == null && target != null)
+					//	throw new InvalidOperationException("Target is not a DockingGroup");
 
 					HorizontalSplit(item, true, tabCtrl);
 				}
@@ -557,8 +555,8 @@ namespace WpfDockingManager
 				case DockingPosition.Bottom:
 				{
 					var tabCtrl = target as DockingGroup;
-					if (tabCtrl == null && target != null)
-						throw new InvalidOperationException("Target is not a DockingGroup");
+					//if (tabCtrl == null && target != null)
+					//	throw new InvalidOperationException("Target is not a DockingGroup");
 
 					HorizontalSplit(item, false, target as DockingGroup);
 				}
@@ -603,7 +601,7 @@ namespace WpfDockingManager
 			{
 				parent = VisualTreeHelper.GetParent(target) as DockingSplitter;
 				if (parent == null)
-					throw new InvalidOperationException("DockingGrid is not a parent for target '"+GetDockTarget(target)+"'");
+					throw new InvalidOperationException("Element is not a parent for target '"+GetDockTarget(target)+"'");
 
 				index = parent.GetIndex(target);
 				if (index == -1 && before)

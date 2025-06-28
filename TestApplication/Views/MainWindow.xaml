@@ -7,7 +7,7 @@
 	xmlns:DMNS="clr-namespace:WpfDockingManager;assembly=WpfDockingManager"
 	xmlns:uc="clr-namespace:TestApplication.Controls"
 	mc:Ignorable="d"
-	Title="DockingTest" Height="450" Width="800">
+	Title="DockingTest" Width="800" Height="450">
 
 	<Grid>
 		<Grid.RowDefinitions>
@@ -65,7 +65,7 @@
 		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
 			<DMNS:DockingGroup TabPosition="Left" DockAnchor="PropertyGroup">
 				<Button DMNS:DockingPanel.DockTitle="Testbutton1">Testbutton1</Button>
-				<Button DMNS:DockingPanel.DockTitle="Testbutton2">Testbutton2</Button>
+				<Button DMNS:DockingPanel.DockTitle="Testbutton2" DMNS:DockingPanel.DockAnchor="TestGroup">Testbutton2</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton3">Testbutton3</Button>
 			</DMNS:DockingGroup>
 			<DMNS:DockingGroup TabPosition="Top" DockTarget="PropertyGroup" DockPosition="Right" DockLength="200">
@@ -73,6 +73,12 @@
 				<Button DMNS:DockingPanel.DockTitle="Testbutton5">Testbutton5</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton6">Testbutton6</Button>
 			</DMNS:DockingGroup>
+			<uc:TestControl
+				DMNS:DockingPanel.DockLength="100"
+				DMNS:DockingPanel.DockTarget="TestGroup"
+				DMNS:DockingPanel.DockTitle="TabText1"
+				DMNS:DockingPanel.DockPosition="Left"
+				></uc:TestControl>
 			<!-- The first element doesn't need a dock position because the window is empty anyway and there is nothing we can dock to.
 				If it is provided it is ignored.
 				DockTitle is the title that should appear on the tab item header.
