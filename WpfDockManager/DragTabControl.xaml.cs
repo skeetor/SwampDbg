@@ -189,6 +189,9 @@ namespace WpfDockingManager
 
 		private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
+			if (e.Handled)
+				return;
+
 			DragState = new DragStateInfo();
 			TabItem? tabItem = DockingHelper.FindParentClass<TabItem>((DependencyObject)e.OriginalSource);
 
@@ -291,6 +294,40 @@ namespace WpfDockingManager
 				TargetIndex = targetIndex
 			};
 			RaiseEvent(ev);
+		}
+		private void ScrollLeft_Click(object sender, RoutedEventArgs e)
+		{
+			var button = sender as Button;
+			var scrollViewer = FindScrollViewer(button);
+			scrollViewer?.LineLeft();
+		}
+
+		private void ScrollRight_Click(object sender, RoutedEventArgs e)
+		{
+			var button = sender as Button;
+			var scrollViewer = FindScrollViewer(button);
+			scrollViewer?.LineRight();
+		}
+
+		private ScrollViewer? FindScrollViewer(DependencyObject? depObj)
+		{
+			if (depObj == null)
+				return null;
+
+			for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+			{
+				DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+				if (child is ScrollViewer scrollViewer)
+					return scrollViewer;
+				else
+				{
+					ScrollViewer? childScrollViewer = FindScrollViewer(child);
+					if (childScrollViewer != null)
+						return childScrollViewer;
+				}
+			}
+
+			return null;
 		}
 	}
 }

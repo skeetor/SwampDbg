@@ -14,6 +14,25 @@
 			DragOver="OnDragOver"
 			Drop="OnDrop">
 
+	<TabControl.Template>
+		<ControlTemplate TargetType="TabControl">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+					<StackPanel Orientation="Horizontal">
+						<!--<Button Content="&lt;" Click="ScrollLeft_Click" Margin="0,0,5,0"/>-->
+						<TabPanel IsItemsHost="True" Margin="0"/>
+						<!--<Button Content="&gt;" Click="ScrollRight_Click" Margin="5,0,0,0"/>-->
+					</StackPanel>
+				</ScrollViewer>
+				<ContentPresenter Grid.Row="1" ContentSource="SelectedContent"/>
+			</Grid>
+		</ControlTemplate>
+	</TabControl.Template>
+
 	<TabControl.Resources>
 		<local:TabItemRotation x:Key="TabItemRotation"/>
 		<local:GridAdjustmentConverter x:Key="GridAdjustment"/>
