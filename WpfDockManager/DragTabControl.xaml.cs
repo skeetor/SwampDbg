@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -295,18 +296,33 @@ namespace WpfDockingManager
 			};
 			RaiseEvent(ev);
 		}
-		private void ScrollLeft_Click(object sender, RoutedEventArgs e)
+
+		private void OnScrollLeftButton(object sender, RoutedEventArgs e)
 		{
 			var button = sender as Button;
 			var scrollViewer = FindScrollViewer(button);
 			scrollViewer?.LineLeft();
 		}
 
-		private void ScrollRight_Click(object sender, RoutedEventArgs e)
+		private void OnScrollRightButton(object sender, RoutedEventArgs e)
 		{
 			var button = sender as Button;
 			var scrollViewer = FindScrollViewer(button);
 			scrollViewer?.LineRight();
+		}
+
+		private void OnScrollUpButton(object sender, RoutedEventArgs e)
+		{
+			var button = sender as Button;
+			var scrollViewer = FindScrollViewer(button);
+			scrollViewer?.LineUp();
+		}
+
+		private void OnScrollDownButton(object sender, RoutedEventArgs e)
+		{
+			var button = sender as Button;
+			var scrollViewer = FindScrollViewer(button);
+			scrollViewer?.LineDown();
 		}
 
 		private ScrollViewer? FindScrollViewer(DependencyObject? depObj)
@@ -314,20 +330,17 @@ namespace WpfDockingManager
 			if (depObj == null)
 				return null;
 
-			for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-			{
-				DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-				if (child is ScrollViewer scrollViewer)
-					return scrollViewer;
-				else
-				{
-					ScrollViewer? childScrollViewer = FindScrollViewer(child);
-					if (childScrollViewer != null)
-						return childScrollViewer;
-				}
-			}
+			var grid = VisualTreeHelper.GetParent(depObj) as Grid;
+			if (grid == null)
+				return null;
 
-			return null;
+			var scroller = grid.Children
+				.Cast<UIElement>()
+				.First(e => e is ScrollViewer) as ScrollViewer;
+			if (scroller == null)
+				return null;
+
+			return scroller;
 		}
 	}
 }

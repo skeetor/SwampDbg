@@ -14,30 +14,45 @@
 			DragOver="OnDragOver"
 			Drop="OnDrop">
 
-	<TabControl.Template>
-		<ControlTemplate TargetType="TabControl">
-			<Grid>
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition/>
-				</Grid.RowDefinitions>
-				<ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
-					<StackPanel Orientation="Horizontal">
-						<!--<Button Content="&lt;" Click="ScrollLeft_Click" Margin="0,0,5,0"/>-->
-						<TabPanel IsItemsHost="True" Margin="0"/>
-						<!--<Button Content="&gt;" Click="ScrollRight_Click" Margin="5,0,0,0"/>-->
-					</StackPanel>
-				</ScrollViewer>
-				<ContentPresenter Grid.Row="1" ContentSource="SelectedContent"/>
-			</Grid>
-		</ControlTemplate>
-	</TabControl.Template>
-
 	<TabControl.Resources>
 		<local:TabItemRotation x:Key="TabItemRotation"/>
-		<local:GridAdjustmentConverter x:Key="GridAdjustment"/>
+		<local:DockOrientationConverter x:Key="DockOrientationConverter"/>
+        <local:DockOrientationVisibillityConverter x:Key="DockOrientationVisibillity"/>
 		<local:GridRowAdjustmentConverter x:Key="GridRowAdjustment"/>
 
+		<!--<Style TargetType="{x:Type TabControl}">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="TabControl">
+							<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition/>
+							</Grid.RowDefinitions>
+
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+
+							<Button Visibility="Visible" Grid.Column="0" Content="&#x2190;" Click="OnScrollLeftButton" Margin="0,0,5,0"/>
+							<Button Visibility="Visible" Grid.Column="2" Content="&#x2192;" Click="OnScrollRightButton" Margin="5,0,0,0"/>
+							<Button Visibility="Hidden" Grid.Column="0" Content="&#x2191;" Click="OnScrollUpButton" Margin="5,0,0,0"/>
+							<Button Visibility="Hidden" Grid.Column="2" Content="&#x2193;" Click="OnScrollDownButton" Margin="5,0,0,0"/>
+
+							<ScrollViewer Name="DragTabScroller" Grid.Column="1" Grid.Row="0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+								<StackPanel Orientation="Horizontal">
+									<TabPanel IsItemsHost="True" Margin="0"/>
+								</StackPanel>
+							</ScrollViewer>
+							<ContentPresenter Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" ContentSource="SelectedContent"/>
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>-->
+		
 		<Style x:Key="CloseButtonStyle" TargetType="Button">
 			<Setter Property="Background" Value="Transparent"/>
 			<Setter Property="BorderThickness" Value="0"/>
@@ -88,7 +103,7 @@
 					so we have to duplicate the style with the different setups. We can at least reduce it
 					to a single duplicate, using converters to place the button in the correct spot.
 				-->
-				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=GridAdjustment}}" Value="Horizontal">
+				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=DockOrientationConverter}}" Value="Horizontal">
 					<Setter Property="Height" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
 					<Setter Property="Template">
 						<Setter.Value>
@@ -140,7 +155,7 @@
 						</Setter.Value>
 					</Setter>
 				</DataTrigger>
-				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=GridAdjustment}}" Value="Vertical">
+				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=DockOrientationConverter}}" Value="Vertical">
 					<Setter Property="Width" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
 					<Setter Property="Template">
 						<Setter.Value>
@@ -205,5 +220,36 @@
 		</Style>
 
 	</TabControl.ItemContainerStyle>
+
+    <TabControl.Template>
+        <ControlTemplate TargetType="TabControl">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Visibility="{Binding Path=TabStripPlacement, Converter={StaticResource DockOrientationVisibillity}, ConverterParameter=V}"
+                        Grid.Column="0" Content="&#x2190;" Click="OnScrollLeftButton" Margin="0,0,5,0"/>
+                <Button Visibility="Visible" Grid.Column="2" Content="&#x2192;" Click="OnScrollRightButton" Margin="5,0,0,0"/>
+                <Button Visibility="Hidden" Grid.Column="0" Content="&#x2191;" Click="OnScrollUpButton" Margin="5,0,0,0"/>
+                <Button Visibility="Hidden" Grid.Column="2" Content="&#x2193;" Click="OnScrollDownButton" Margin="5,0,0,0"/>
+
+                <ScrollViewer Name="DragTabScroller" Grid.Column="1" Grid.Row="0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+                    <StackPanel Orientation="{Binding Path=TabStripPlacement, Converter={StaticResource DockOrientationConverter}}">
+                        <TabPanel IsItemsHost="True" Margin="0"/>
+                    </StackPanel>
+                </ScrollViewer>
+                <ContentPresenter Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" ContentSource="SelectedContent"/>
+            </Grid>
+        </ControlTemplate>
+    </TabControl.Template>
+
 
 </TabControl>

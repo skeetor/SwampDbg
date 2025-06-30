@@ -15,23 +15,23 @@ namespace WpfDockingManager
 	{
 		public const int DefaultHandleWidth = 4;
 		public const int DefaultHandleHeight = 4;
-		private Alignment _alignment = Alignment.Vertical;
+		private Orientation _orientation = Orientation.Vertical;
 
 		public DockingSplitter()
 			: base()
 		{
 		}
 
-		public Alignment Aligned
+		public Orientation Orientation
 		{
-			get { return _alignment; }
+			get { return _orientation; }
 
 			set
 			{
-				if (Children.Count > 0 && value != _alignment)
-					throw new InvalidOperationException("Alignment change after childs added.");
+				if (Children.Count > 0 && value != _orientation)
+					throw new InvalidOperationException("Orientation change after childs added.");
 
-				_alignment = value;
+				_orientation = value;
 			}
 		}
 
@@ -40,7 +40,7 @@ namespace WpfDockingManager
 			if (element == null)
 				return -1;
 
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 				return GetColumn(element);
 
 			return GetRow(element);
@@ -51,7 +51,7 @@ namespace WpfDockingManager
 			if (element == null)
 				return;
 
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 				SetColumn(element, index);
 			else
 				SetRow(element, index);
@@ -80,7 +80,7 @@ namespace WpfDockingManager
 		{
 			var brush = Brushes.Black;
 
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 			{
 				return new GridSplitter
 				{
@@ -185,7 +185,7 @@ namespace WpfDockingManager
 
 		private void InsertDefinition(int index, bool append)
 		{
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 			{
 				var newColumn = new ColumnDefinition();
 				newColumn.Width = new GridLength(1.0, GridUnitType.Star);
@@ -210,7 +210,7 @@ namespace WpfDockingManager
 		protected void InsertSplitter(int index, int offset)
 		{
 			var gridSplitter = CreateDefaultGridSplitter();
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 			{
 				var newSplitterColumn = new ColumnDefinition() { Width = new GridLength(DefaultHandleWidth + 1) };
 
@@ -249,7 +249,7 @@ namespace WpfDockingManager
 				throw new InvalidOperationException("'oldChild' is not an element of this DockingSplitter");
 
 			Children.Insert(index, newChild);
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 				SetColumn(newChild, index);
 			else
 				SetRow(newChild, index);
@@ -267,7 +267,7 @@ namespace WpfDockingManager
 			if (index < 0 || index >= Children.Count)
 				throw new IndexOutOfRangeException("Index " + index.ToString() + "/" + Children.Count.ToString());
 
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 				ColumnDefinitions[index].Width = length;
 			else
 				RowDefinitions[index].Height = length;
@@ -281,7 +281,7 @@ namespace WpfDockingManager
 			if (index < 0 || index >= Children.Count)
 				throw new IndexOutOfRangeException("Index "+index.ToString()+"/"+ Children.Count.ToString());
 
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 				return ColumnDefinitions[index].Width;
 
 			return RowDefinitions[index].Height;
@@ -321,7 +321,7 @@ namespace WpfDockingManager
 		{
 			Children.RemoveAt(index);
 
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 				ColumnDefinitions.RemoveAt(index);
 			else
 				RowDefinitions.RemoveAt(index);
@@ -338,7 +338,7 @@ namespace WpfDockingManager
 				return false;
 
 			Children.RemoveAt(index);
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 				ColumnDefinitions.RemoveAt(index);
 			else
 				RowDefinitions.RemoveAt(index);
@@ -393,7 +393,7 @@ namespace WpfDockingManager
 		public void DumpGrid()
 		{
 			Debug.WriteLine("GridDump");
-			if (Aligned == Alignment.Vertical)
+			if (Orientation == Orientation.Vertical)
 			{
 				foreach (var d in ColumnDefinitions)
 					Debug.WriteLine("Length (C): " + d.Width.Value.ToString());

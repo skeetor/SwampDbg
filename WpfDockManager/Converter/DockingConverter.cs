@@ -68,7 +68,7 @@ namespace WpfDockingManager
 		}
 	}
 
-	public class GridAdjustmentConverter : IValueConverter
+	public class DockOrientationConverter : IValueConverter
 	{
 		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -78,9 +78,9 @@ namespace WpfDockingManager
 			// In case of left or right the button position has to be adjusted. In case of Top/Bottm, the position is
 			// the same.
 			if (value is Dock.Top or Dock.Bottom)
-				return Alignment.Horizontal;
+				return Orientation.Horizontal;
 
-			return Alignment.Vertical;
+			return Orientation.Vertical;
 		}
 
 		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)
@@ -115,6 +115,28 @@ namespace WpfDockingManager
 				return 0;
 
 			return 1;
+		}
+
+		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+
+	public class DockOrientationVisibillityConverter : IValueConverter
+	{
+		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
+		{
+			var value = (Dock)inputValue;
+
+			// The close button on our DragTabControl needs to change the grid rows/columns depending on the placement.
+			// In case of left or right the button position has to be adjusted. In case of Top/Bottm, the position is
+			// the same.
+			if (value is Dock.Top or Dock.Bottom)
+				return Orientation.Horizontal;
+
+			return Orientation.Vertical;
 		}
 
 		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)

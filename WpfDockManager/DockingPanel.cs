@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Xml.Linq;
 using LayoutItemList = WpfDockingManager.Collections.UniqueList<WpfDockingManager.Layout.LayoutItem, System.Windows.DependencyObject>;
 
 namespace WpfDockingManager
@@ -38,6 +37,8 @@ namespace WpfDockingManager
 
 	public class DockingPanel : Panel, IDockingPanel
 	{
+		private static readonly Orientation InvalidOrientation = (Orientation)10;
+
 		// When the class is instantiated we have to remember all items added to it
 		// so we can create the layout when all items are fully loaded. Properties
 		// are added lazily, so we have to wait until an element has finished getting
@@ -257,27 +258,27 @@ namespace WpfDockingManager
 		public static readonly DependencyProperty DockFloatingProperty =
 				DependencyProperty.RegisterAttached(
 						"DockFloating",
-						typeof(Alignment),
+						typeof(Orientation),
 						typeof(DockingPanel),
 						new FrameworkPropertyMetadata(
-							(Alignment)0		// There is no null value so we have to use this instead.
+							InvalidOrientation     // There is no null value so we have to use this instead.
 							),
 						new ValidateValueCallback(IsValidDockFloating)
 					);
 
 		internal static bool IsValidDockFloating(object o)
 		{
-			Alignment alignment = (Alignment)o;
-			return alignment is 0 or Alignment.Vertical or Alignment.Horizontal;
+			Orientation orientation = (Orientation)o;
+			return orientation == InvalidOrientation || orientation is Orientation.Vertical or Orientation.Horizontal;
 		}
 
-		public static Alignment GetDockFloating(UIElement element)
+		public static Orientation GetDockFloating(UIElement element)
 		{
 			ArgumentNullException.ThrowIfNull(element);
-			return (Alignment)element.GetValue(DockFloatingProperty);
+			return (Orientation)element.GetValue(DockFloatingProperty);
 		}
 
-		public static void SetDockFloating(UIElement element, Alignment value)
+		public static void SetDockFloating(UIElement element, Orientation value)
 		{
 			ArgumentNullException.ThrowIfNull(element);
 			element.SetValue(DockFloatingProperty, value);
@@ -310,7 +311,7 @@ namespace WpfDockingManager
 		public DockingPanel()
 			: base()
 		{
-			RootSplitter.Aligned = Alignment.Vertical;
+			RootSplitter.Orientation = Orientation.Vertical;
 			Children.Add(RootSplitter);
 			LayoutItems = new();
 			Loaded += OnLoadedEvent;
@@ -473,7 +474,7 @@ namespace WpfDockingManager
 			var index = GetDockIndex(element);
 
 			var floating = GetDockFloating(element);
-			if (floating is Alignment.Vertical or Alignment.Horizontal)
+			if (floating is Orientation.Vertical or Orientation.Horizontal)
 			{
 				var rect = GetFloatingRectangle(element);
 				DockingFloat(element, dock, target, index, true, rect);
@@ -494,9 +495,9 @@ namespace WpfDockingManager
 			if (IsEmpty())
 			{
 				if (dock is DockingPosition.Top or DockingPosition.Bottom)
-					RootSplitter.Aligned = Alignment.Horizontal;
+					RootSplitter.Orientation = Orientation.Horizontal;
 				else if (dock is DockingPosition.Left or DockingPosition.Right)
-					RootSplitter.Aligned = Alignment.Vertical;
+					RootSplitter.Orientation = Orientation.Vertical;
 
 				dock = DockingPosition.None;
 			}
@@ -582,12 +583,12 @@ namespace WpfDockingManager
 		}
 
 		protected void HorizontalSplit(FrameworkElement element, bool before, DockingGroup? target = null)
-			=> Split(element, before, Alignment.Horizontal, target);
+			=> Split(element, before, Orientation.Horizontal, target);
 
 		protected void VerticalSplit(FrameworkElement element, bool before, DockingGroup? target = null)
-			=> Split(element, before, Alignment.Vertical, target);
+			=> Split(element, before, Orientation.Vertical, target);
 
-		protected void Split(FrameworkElement element, bool before, Alignment axis, DockingGroup? target = null)
+		protected void Split(FrameworkElement element, bool before, Orientation axis, DockingGroup? target = null)
 		{
 			if (target == element)
 				throw new InvalidOperationException("Invalid target points to itself.");
@@ -609,7 +610,7 @@ namespace WpfDockingManager
 				else if (!before && target != null)
 					index++;
 
-				if (parent.Aligned != axis)
+				if (parent.Orientation != axis)
 					parent = ReplaceWithSplitter(axis, parent, target!, before, out index);
 			}
 
@@ -629,15 +630,15 @@ namespace WpfDockingManager
 			UpdateLength(element, parent, tabControl);
 		}
 
-		protected DockingSplitter ReplaceRootSplitter(bool before, Alignment axis, out int index)
+		protected DockingSplitter ReplaceRootSplitter(bool before, Orientation axis, out int index)
 		{
 			index = 0;
 			var parent = RootSplitter;
 
-			if (parent.Aligned != axis)
+			if (parent.Orientation != axis)
 			{
 				parent = new DockingSplitter();
-				parent.Aligned = axis;
+				parent.Orientation = axis;
 				DockingHelper.RemoveElementFromItsParent(RootSplitter);
 				parent.Add(RootSplitter);
 				RootSplitter = parent;
@@ -651,14 +652,14 @@ namespace WpfDockingManager
 			return parent;
 		}
 
-		protected DockingSplitter ReplaceWithSplitter(Alignment axis, DockingSplitter parentSplitter, DockingGroup target, bool before, out int index)
+		protected DockingSplitter ReplaceWithSplitter(Orientation axis, DockingSplitter parentSplitter, DockingGroup target, bool before, out int index)
 		{
 			var targetIndex = parentSplitter.GetIndex(target);
 			if (targetIndex == -1)
 				throw new InvalidOperationException("Target is not an element of the provided DockingSplitter");
 
 			var newSplitter = new DockingSplitter();
-			newSplitter.Aligned = axis;
+			newSplitter.Orientation = axis;
 
 			parentSplitter.Replace(target, newSplitter);
 			newSplitter.Add(target);

@@ -2,8 +2,8 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:local="clr-namespace:WpfDockingManager">
-	
-	<Style TargetType="{x:Type local:DockingPanel}">
+
+    <Style TargetType="{x:Type local:DockingPanel}">
 		<!--
 		<Setter Property="Template">
 			<Setter.Value>
