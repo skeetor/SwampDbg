@@ -300,31 +300,28 @@ namespace WpfDockingManager
 		private void OnScrollLeftButton(object sender, RoutedEventArgs e)
 		{
 			var button = sender as Button;
-			var scrollViewer = FindScrollViewer(button);
-			scrollViewer?.LineLeft();
+			var scrollViewer = FindScrollViewer(button)!;
+			var tabControl = DockingHelper.FindParentClass<DragTabControl>(scrollViewer);
+			var dock = tabControl?.TabStripPlacement;
+
+			if (dock is Dock.Top or Dock.Bottom)
+				scrollViewer?.LineLeft();
+			else
+				scrollViewer?.LineUp();
 		}
 
 		private void OnScrollRightButton(object sender, RoutedEventArgs e)
 		{
 			var button = sender as Button;
-			var scrollViewer = FindScrollViewer(button);
-			scrollViewer?.LineRight();
-		}
+			var scrollViewer = FindScrollViewer(button)!;
+			var tabControl = DockingHelper.FindParentClass<DragTabControl>(scrollViewer);
+			var dock = tabControl?.TabStripPlacement;
 
-		private void OnScrollUpButton(object sender, RoutedEventArgs e)
-		{
-			var button = sender as Button;
-			var scrollViewer = FindScrollViewer(button);
-			scrollViewer?.LineUp();
+			if (dock is Dock.Top or Dock.Bottom)
+				scrollViewer?.LineRight();
+			else
+				scrollViewer?.LineDown();
 		}
-
-		private void OnScrollDownButton(object sender, RoutedEventArgs e)
-		{
-			var button = sender as Button;
-			var scrollViewer = FindScrollViewer(button);
-			scrollViewer?.LineDown();
-		}
-
 		private ScrollViewer? FindScrollViewer(DependencyObject? depObj)
 		{
 			if (depObj == null)

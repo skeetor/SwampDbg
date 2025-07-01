@@ -2,8 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Markup;
+using System.Net;
 
 namespace WpfDockingManager
 {
@@ -123,20 +123,28 @@ namespace WpfDockingManager
 		}
 	}
 
-
-	public class DockOrientationVisibillityConverter : IValueConverter
+	public class ScrollButtonContentConverter : IValueConverter
 	{
 		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture)
 		{
 			var value = (Dock)inputValue;
+			string position = (string)parameter;
 
-			// The close button on our DragTabControl needs to change the grid rows/columns depending on the placement.
-			// In case of left or right the button position has to be adjusted. In case of Top/Bottm, the position is
-			// the same.
 			if (value is Dock.Top or Dock.Bottom)
-				return Orientation.Horizontal;
+			{
+				if (position == "Front")
+					return WebUtility.HtmlDecode("&#x2190;");		// Left
+				else
+					return WebUtility.HtmlDecode("&#x2192;");		// Right
 
-			return Orientation.Vertical;
+			}
+			else
+			{
+				if (position == "Front")
+					return WebUtility.HtmlDecode("&#x2191;");		// Up
+				else
+					return WebUtility.HtmlDecode("&#x2193;");		// Down
+			}
 		}
 
 		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture)
