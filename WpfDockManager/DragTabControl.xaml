@@ -323,7 +323,7 @@
 					</Setter>
 				</DataTrigger>
 				<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=TabStripPlacement, Converter={StaticResource ResourceKey=DockOrientationConverter}}" Value="Vertical">
-					<Setter Property="Width" Value="{Binding TabHeight, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
+					<Setter Property="Width" Value="{Binding TabHeightV, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="TabItem">

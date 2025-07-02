@@ -14,17 +14,13 @@ namespace WpfDockingManager
 			DependencyProperty.Register("TabPosition", typeof(Dock), typeof(DockingGroup),
 				new PropertyMetadata(Dock.Top));
 
-		public static readonly DependencyProperty TabWidthProperty =
-			DependencyProperty.Register("TabWidth", typeof(double), typeof(DockingGroup),
-				new PropertyMetadata(double.NaN));
-
 		public static readonly DependencyProperty TabHeightProperty =
 			DependencyProperty.Register("TabHeight", typeof(double), typeof(DockingGroup),
-				new PropertyMetadata(double.NaN));
+				new PropertyMetadata(double.NaN, new PropertyChangedCallback(OnTabHeightChanged)));
 
-		//public static readonly DependencyProperty TabFontSizeProperty =
-		//	DependencyProperty.Register("TabFontSize", typeof(double), typeof(DockingGroup),
-		//		new PropertyMetadata(double.NaN));
+		public static readonly DependencyProperty TabHeightVProperty =
+			DependencyProperty.Register("TabHeightV", typeof(double), typeof(DockingGroup),
+				new PropertyMetadata(double.NaN, new PropertyChangedCallback(OnTabHeightVChanged)));
 
 		public static readonly DependencyProperty CloseTabCommandProperty =
 			DependencyProperty.Register("CloseTabCommand", typeof(ICommand), typeof(DockingGroup));
@@ -41,23 +37,36 @@ namespace WpfDockingManager
 			set { SetValue(TabPositionProperty, value); }
 		}
 
-		public double TabWidth
-		{
-			get { return (double)GetValue(TabWidthProperty); }
-			set { SetValue(TabWidthProperty, value); }
-		}
-
 		public double TabHeight
 		{
 			get { return (double)GetValue(TabHeightProperty); }
 			set { SetValue(TabHeightProperty, value); }
 		}
+		private static void OnTabHeightChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
+		{
+			SetTabHeightV((depObj as UIElement)!, ((double)e.NewValue)*DragTabControl.AspectRatioValue);
+		}
+		private static void OnTabHeightVChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
+		{
+			SetTabHeightV((depObj as UIElement)!, ((double)e.NewValue) * DragTabControl.AspectRatioValue);
+		}
 
-		//public double TabFontSize
-		//{
-		//	get { return (double)GetValue(TabFontSizeProperty); }
-		//	set { SetValue(TabFontSizeProperty, value); }
-		//}
+		public double TabHeightV
+		{
+			get { return ((double)GetValue(TabHeightVProperty)) * DragTabControl.AspectRatioValue; }
+			set { SetValue(TabHeightVProperty, value); }
+		}
+		public static double GetTabHeightV(UIElement element)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			return (double)element.GetValue(TabHeightVProperty);
+		}
+
+		public static void SetTabHeightV(UIElement element, double value)
+		{
+			ArgumentNullException.ThrowIfNull(element);
+			element.SetValue(TabHeightVProperty, value);
+		}
 
 		public ICommand CloseTabCommand
 		{
