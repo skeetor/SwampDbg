@@ -273,6 +273,7 @@
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="TabItem">
+								<Viewbox Stretch="Uniform" StretchDirection="Both">
 								<Grid>
 									<Border x:Name="Border" 
 											Background="{TemplateBinding Background}"
@@ -286,13 +287,13 @@
 												<ColumnDefinition Width="Auto"/>
 											</Grid.ColumnDefinitions>
 
-											<ContentPresenter x:Name="ContentSite"
-																Grid.Column="0"
-																VerticalAlignment="Center"
-																HorizontalAlignment="Center"
-																ContentSource="Header"
-																RecognizesAccessKey="True"
-																Margin="5,2,5,2"/>
+												<ContentPresenter x:Name="ContentSite"
+																	Grid.Column="0"
+																	VerticalAlignment="Center"
+																	HorizontalAlignment="Center"
+																	ContentSource="Header"
+																	RecognizesAccessKey="True"
+																	Margin="5,2,5,2"/>
 
 											<Button x:Name="CloseButton"
 														Grid.Column="1"
@@ -303,6 +304,7 @@
 										</Grid>
 									</Border>
 								</Grid>
+								</Viewbox>
 								<ControlTemplate.Triggers>
 									<Trigger Property="IsSelected" Value="True">
 										<Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
@@ -325,6 +327,7 @@
 					<Setter Property="Template">
 						<Setter.Value>
 							<ControlTemplate TargetType="TabItem">
+								<Viewbox Stretch="Uniform" StretchDirection="Both">
 								<Grid>
 									<Border x:Name="Border" 
 											Background="{TemplateBinding Background}"
@@ -363,6 +366,7 @@
 										</Grid>
 									</Border>
 								</Grid>
+								</Viewbox>
 								<ControlTemplate.Triggers>
 									<Trigger Property="IsSelected" Value="True">
 										<Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>

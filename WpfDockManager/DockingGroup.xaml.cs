@@ -22,6 +22,10 @@ namespace WpfDockingManager
 			DependencyProperty.Register("TabHeight", typeof(double), typeof(DockingGroup),
 				new PropertyMetadata(double.NaN));
 
+		//public static readonly DependencyProperty TabFontSizeProperty =
+		//	DependencyProperty.Register("TabFontSize", typeof(double), typeof(DockingGroup),
+		//		new PropertyMetadata(double.NaN));
+
 		public static readonly DependencyProperty CloseTabCommandProperty =
 			DependencyProperty.Register("CloseTabCommand", typeof(ICommand), typeof(DockingGroup));
 
@@ -48,6 +52,12 @@ namespace WpfDockingManager
 			get { return (double)GetValue(TabHeightProperty); }
 			set { SetValue(TabHeightProperty, value); }
 		}
+
+		//public double TabFontSize
+		//{
+		//	get { return (double)GetValue(TabFontSizeProperty); }
+		//	set { SetValue(TabFontSizeProperty, value); }
+		//}
 
 		public ICommand CloseTabCommand
 		{

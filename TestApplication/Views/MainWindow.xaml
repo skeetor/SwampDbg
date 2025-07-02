@@ -63,8 +63,8 @@
 		</StackPanel>
 
 		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
-			<DMNS:DockingGroup TabPosition="Top" DockAnchor="PropertyGroup">
-                <Button DMNS:DockingPanel.DockTitle="Testbutton1">Testbutton1</Button>
+			<DMNS:DockingGroup TabPosition="Top" TabHeight="25" DockAnchor="PropertyGroup">
+				<Button DMNS:DockingPanel.DockTitle="Testbutton1">Testbutton1</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton2" DMNS:DockingPanel.DockAnchor="TestGroup">Testbutton2</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton3">Testbutton3</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton4">Testbutton4</Button>
