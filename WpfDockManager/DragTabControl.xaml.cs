@@ -1,10 +1,12 @@
 using System.Data.Common;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Reflection.Metadata.Ecma335;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WpfDockingManager
 {
@@ -300,29 +302,164 @@ namespace WpfDockingManager
 
 		private void OnScrollLeftButton(object sender, RoutedEventArgs e)
 		{
-			var button = sender as Button;
-			var scrollViewer = FindScrollViewer(button)!;
-			var tabControl = DockingHelper.FindParentClass<DragTabControl>(scrollViewer);
-			var dock = tabControl?.TabStripPlacement;
+			var leftButton = sender as Button;
+			if (leftButton == null)
+				return;
 
-			if (dock is Dock.Top or Dock.Bottom)
-				scrollViewer?.LineLeft();
-			else
-				scrollViewer?.LineUp();
+			var scrollViewer = FindScrollViewer(leftButton)!;
+			if (scrollViewer == null)
+				return;
+
+			var rightButton = FindButton(DockingHelper.FindParentClass<Grid>(scrollViewer), "Right");
+			if (rightButton == null)
+				return;
+
+			var tabControl = DockingHelper.FindParentClass<TabControl>(scrollViewer);
+			if (tabControl == null)
+				return;
+
+			double scrollPos = scrollViewer.HorizontalOffset;
+			double newPos = 0;
+
+			rightButton.IsEnabled = true;
+			for (int i = 0; i < tabControl.Items.Count - 1; i++)
+			{
+				var tabItem = tabControl.Items[i] as TabItem;
+				if (tabItem == null)
+					continue;
+
+				if (newPos + tabItem.ActualWidth >= scrollPos)
+				{
+					scrollViewer.ScrollToHorizontalOffset(newPos);
+					if (newPos <= 0)
+						leftButton.IsEnabled = false;
+
+					return;
+				}
+				newPos += tabItem.ActualWidth;
+			}
 		}
 
 		private void OnScrollRightButton(object sender, RoutedEventArgs e)
 		{
-			var button = sender as Button;
-			var scrollViewer = FindScrollViewer(button)!;
-			var tabControl = DockingHelper.FindParentClass<DragTabControl>(scrollViewer);
-			var dock = tabControl?.TabStripPlacement;
+			var rightButton = sender as Button;
+			if (rightButton == null)
+				return;
 
-			if (dock is Dock.Top or Dock.Bottom)
-				scrollViewer?.LineRight();
-			else
-				scrollViewer?.LineDown();
+			var scrollViewer = FindScrollViewer(rightButton)!;
+			if (scrollViewer == null)
+				return;
+
+			var leftButton = FindButton(DockingHelper.FindParentClass<Grid>(scrollViewer), "Left");
+			if (leftButton == null)
+				return;
+
+			var tabControl = DockingHelper.FindParentClass<TabControl>(scrollViewer);
+			if (tabControl == null)
+				return;
+
+			double scrollPos = scrollViewer.HorizontalOffset;
+			double newPos = 0;
+
+			leftButton.IsEnabled = true;
+			for (int i = 0; i < tabControl.Items.Count-1; i++)
+			{
+				var tabItem = tabControl.Items[i] as TabItem;
+				if (tabItem == null)
+					continue;
+
+				newPos += tabItem.ActualWidth;
+				if (newPos > scrollPos)
+				{
+					scrollViewer.ScrollToHorizontalOffset(newPos);
+					if (newPos + scrollViewer.ViewportWidth >= scrollViewer.ExtentWidth)
+						rightButton.IsEnabled = false;
+
+					return;
+				}
+			}
 		}
+
+		private void OnScrollUpButton(object sender, RoutedEventArgs e)
+		{
+			var upButton = sender as Button;
+			if (upButton == null)
+				return;
+
+			var scrollViewer = FindScrollViewer(upButton)!;
+			if (scrollViewer == null)
+				return;
+
+			var downButton = FindButton(DockingHelper.FindParentClass<Grid>(scrollViewer), "Down");
+			if (downButton == null)
+				return;
+
+			var tabControl = DockingHelper.FindParentClass<TabControl>(scrollViewer);
+			if (tabControl == null)
+				return;
+
+			double scrollPos = scrollViewer.VerticalOffset;
+			double newPos = 0;
+
+			downButton.IsEnabled = true;
+			for (int i = 0; i < tabControl.Items.Count - 1; i++)
+			{
+				var tabItem = tabControl.Items[i] as TabItem;
+				if (tabItem == null)
+					continue;
+
+				if (newPos + tabItem.ActualHeight >= scrollPos)
+				{
+					scrollViewer.ScrollToVerticalOffset(newPos);
+					if (newPos <= 0)
+						upButton.IsEnabled = false;
+
+					return;
+				}
+				newPos += tabItem.ActualHeight;
+			}
+		}
+
+		private void OnScrollDownButton(object sender, RoutedEventArgs e)
+		{
+			var downButton = sender as Button;
+			if (downButton == null)
+				return;
+
+			var scrollViewer = FindScrollViewer(downButton)!;
+			if (scrollViewer == null)
+				return;
+
+			var upButton = FindButton(DockingHelper.FindParentClass<Grid>(scrollViewer), "Up");
+			if (upButton == null)
+				return;
+
+			var tabControl = DockingHelper.FindParentClass<TabControl>(scrollViewer);
+			if (tabControl == null)
+				return;
+
+			double scrollPos = scrollViewer.VerticalOffset;
+			double newPos = 0;
+
+			upButton.IsEnabled = true;
+			for (int i = 0; i < tabControl.Items.Count - 1; i++)
+			{
+				var tabItem = tabControl.Items[i] as TabItem;
+				if (tabItem == null)
+					continue;
+
+				newPos += tabItem.ActualHeight;
+				if (newPos > scrollPos)
+				{
+					scrollViewer.ScrollToVerticalOffset(newPos);
+					if (newPos + scrollViewer.ViewportHeight >= scrollViewer.ExtentHeight)
+						downButton.IsEnabled = false;
+
+					return;
+				}
+			}
+		}
+
 		private ScrollViewer? FindScrollViewer(DependencyObject? depObj)
 		{
 			if (depObj == null)
@@ -354,34 +491,103 @@ namespace WpfDockingManager
 			if (grid == null)
 				return;
 
-			Button? scrollButtonLeft = null;
-			Button? scrollButtonRight = null;
+			var leftButton = FindButton(grid, "Left");
+			var rightButton = FindButton(grid, "Right");
 
-			foreach(var child in grid.Children)
+			if (leftButton != null)
+			{
+				if(canScrollLeft)
+					leftButton.IsEnabled = true;
+				else
+					leftButton.IsEnabled = false;
+			}
+
+			if (rightButton != null)
+			{
+				if (canScrollRight)
+					rightButton.IsEnabled = true;
+				else
+					rightButton.IsEnabled = false;
+			}
+
+			UpdateScrollButtons(grid, canScrollLeft || canScrollRight, leftButton, rightButton);
+		}
+
+		private void OnScrollChangedVertically(object sender, ScrollChangedEventArgs e)
+		{
+			var scroller = sender as ScrollViewer;
+			if (scroller == null)
+				return;
+
+			bool canScrollUp = scroller.VerticalOffset > 0;
+			bool canScrollDown = scroller.VerticalOffset < scroller.ExtentHeight - scroller.ViewportHeight;
+
+			var grid = VisualTreeHelper.GetParent(scroller) as Grid;
+			if (grid == null)
+				return;
+
+			var upButton = FindButton(grid, "Up");
+			var downButton = FindButton(grid, "Down");
+
+			if (upButton != null)
+			{
+				if (canScrollUp)
+					upButton.IsEnabled = true;
+				else
+					upButton.IsEnabled = false;
+			}
+
+			if (downButton != null)
+			{
+				if (canScrollDown)
+					downButton.IsEnabled = true;
+				else
+					downButton.IsEnabled = false;
+			}
+
+			UpdateScrollButtons(grid, canScrollUp || canScrollDown, upButton, downButton);
+		}
+
+		private Button? FindButton(Grid? grid, string position)
+		{
+			if (grid == null)
+				return null;
+
+			var tagText = "ScrollBtn" + position;
+			foreach (var child in grid.Children)
 			{
 				var btn = child as Button;
 				if (btn == null)
 					continue;
 
-				if (btn.Tag.ToString() == "ScrollBtnLeft")
-					scrollButtonLeft = btn;
-				else if (btn.Tag.ToString() == "ScrollBtnRight")
-					scrollButtonRight = btn;
+				if (btn.Tag.ToString() == tagText)
+					return btn;
 			}
 
-			if (scrollButtonLeft == null || scrollButtonRight == null)
+			return null;
+		}
+
+		private void UpdateScrollButtons(Grid grid, bool visible, Button? backward, Button? forward)
+		{
+			if (backward == null || forward == null)
 				return;
 
+			var tabControl = DockingHelper.FindParentClass<TabControl>(grid);
+			if (tabControl == null)
+				return;
 
-			if (canScrollLeft || canScrollRight)
+			if (tabControl.Items.Count <= 1)
+				visible = false;
+
+			if (visible)
 			{
-				scrollButtonLeft.Visibility = Visibility.Visible;
-				scrollButtonRight.Visibility = Visibility.Visible;
+				backward.Visibility = Visibility.Visible;
+				forward.Visibility = Visibility.Visible;
 			}
 			else
 			{
-				scrollButtonLeft.Visibility = Visibility.Collapsed;
-				scrollButtonRight.Visibility = Visibility.Collapsed;
+				backward.Visibility = Visibility.Collapsed;
+				forward.Visibility = Visibility.Collapsed;
 			}
 		}
 	}
