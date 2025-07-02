@@ -1,5 +1,6 @@
 using System.Data.Common;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -338,6 +339,50 @@ namespace WpfDockingManager
 				return null;
 
 			return scroller;
+		}
+
+		private void OnScrollChangedHorizontally(object sender, ScrollChangedEventArgs e)
+		{
+			var scroller = sender as ScrollViewer;
+			if (scroller == null)
+				return;
+
+			bool canScrollLeft = scroller.HorizontalOffset > 0;
+			bool canScrollRight = scroller.HorizontalOffset < scroller.ExtentWidth - scroller.ViewportWidth;
+
+			var grid = VisualTreeHelper.GetParent(scroller) as Grid;
+			if (grid == null)
+				return;
+
+			Button? scrollButtonLeft = null;
+			Button? scrollButtonRight = null;
+
+			foreach(var child in grid.Children)
+			{
+				var btn = child as Button;
+				if (btn == null)
+					continue;
+
+				if (btn.Tag.ToString() == "ScrollBtnLeft")
+					scrollButtonLeft = btn;
+				else if (btn.Tag.ToString() == "ScrollBtnRight")
+					scrollButtonRight = btn;
+			}
+
+			if (scrollButtonLeft == null || scrollButtonRight == null)
+				return;
+
+
+			if (canScrollLeft || canScrollRight)
+			{
+				scrollButtonLeft.Visibility = Visibility.Visible;
+				scrollButtonRight.Visibility = Visibility.Visible;
+			}
+			else
+			{
+				scrollButtonLeft.Visibility = Visibility.Collapsed;
+				scrollButtonRight.Visibility = Visibility.Collapsed;
+			}
 		}
 	}
 }

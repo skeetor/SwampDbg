@@ -17,8 +17,7 @@
 	<TabControl.Resources>
 		<local:TabItemRotation x:Key="TabItemRotation"/>
 		<local:DockOrientationConverter x:Key="DockOrientationConverter"/>
-		<local:ScrollButtonContentConverter x:Key="ScrollButtonContent"/>
-		<local:GridRowAdjustmentConverter x:Key="GridRowAdjustment"/>
+		<local:NotEqualConverter x:Key="NotEqual"/>
 		
 		<Style x:Key="CloseButtonStyle" TargetType="Button">
 			<Setter Property="Background" Value="Transparent"/>
@@ -64,217 +63,98 @@
 	<TabControl.Template>
 		<ControlTemplate TargetType="TabControl">
 			<Grid>
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition/>
-				</Grid.RowDefinitions>
+				<!-- Top placement -->
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
 
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="Auto"/>
-				</Grid.ColumnDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
 
-				<Button Visibility="Visible"
-						Grid.Column="0"
-						FontSize="16"
-						FontWeight="Bold"
-						Content="{Binding
-								RelativeSource={RelativeSource TemplatedParent},
-								Path=TabStripPlacement,
-								Converter={StaticResource ScrollButtonContent},
-								ConverterParameter=Front}"
-						Click="OnScrollLeftButton" Margin="0,0,5,0"/>
+					<Button Tag="ScrollBtnLeft" Visibility="Visible"
+							Grid.Column="0" Grid.Row="0"
+							FontWeight="Bold" Content="&#x2190;" Margin="0,0,5,0"
+							Click="OnScrollLeftButton"/>
 
-				<Button Visibility="Visible"
-						Grid.Column="2"
-						FontSize="16"
-						FontWeight="Bold"
-						Content="{Binding
-								RelativeSource={RelativeSource TemplatedParent},
-								Path=TabStripPlacement,
-								Converter={StaticResource ScrollButtonContent},
-								ConverterParameter=Back}"
-						Click="OnScrollRightButton" Margin="5,0,0,0"/>
+					<Button Tag="ScrollBtnRight" Visibility="Visible"
+							Grid.Column="2" Grid.Row="0"
+							FontWeight="Bold" Content="&#x2192;" Margin="5,0,0,0"
+							Click="OnScrollRightButton"/>
 
-				<ScrollViewer Name="DragTabScroller" Grid.Column="1" Grid.Row="0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-					<StackPanel Orientation="{Binding Path=TabStripPlacement, Converter={StaticResource DockOrientationConverter}}">
-						<TabPanel IsItemsHost="True" Margin="0"/>
-					</StackPanel>
-				</ScrollViewer>
-				<ContentPresenter Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" ContentSource="SelectedContent"/>
+					<ScrollViewer Grid.Column="1" Grid.Row="0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" ScrollChanged="OnScrollChangedHorizontally">
+						<StackPanel Orientation="Horizontal">
+							<TabPanel IsItemsHost="True" Margin="0"/>
+						</StackPanel>
+					</ScrollViewer>
+					<ContentPresenter Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" ContentSource="SelectedContent"/>
+
+					<Grid.Style>
+						<Style TargetType="Grid">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent},
+															Path=TabStripPlacement,
+															Converter={StaticResource NotEqual},
+															ConverterParameter=Top}"
+															Value="True">
+									<Setter Property="Visibility" Value="Collapsed"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Grid.Style>
+				</Grid>
+
+				<!-- Bottom placement -->
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+
+					<Button Tag="ScrollBtnLeft" Visibility="Visible"
+							Grid.Column="0" Grid.Row="1"
+							FontWeight="Bold" Content="&#x2190;" Margin="0,0,5,0"
+							Click="OnScrollLeftButton"/>
+
+					<Button Tag="ScrollBtnRight" Visibility="Visible"
+							Grid.Column="2" Grid.Row="1"
+							FontWeight="Bold" Content="&#x2192;" Margin="0,0,5,0"
+							Click="OnScrollRightButton"/>
+
+					<ScrollViewer Grid.Column="1" Grid.Row="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" ScrollChanged="OnScrollChangedHorizontally">
+						<StackPanel Orientation="Horizontal">
+							<TabPanel IsItemsHost="True" Margin="0"/>
+						</StackPanel>
+					</ScrollViewer>
+					<ContentPresenter Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" ContentSource="SelectedContent"/>
+
+					<Grid.Style>
+						<Style TargetType="Grid">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent},
+															Path=TabStripPlacement,
+															Converter={StaticResource NotEqual},
+															ConverterParameter=Bottom}"
+															Value="True">
+									<Setter Property="Visibility" Value="Collapsed"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Grid.Style>
+				</Grid>
 			</Grid>
 		</ControlTemplate>
 	</TabControl.Template>
-
-	<!--<TabControl.Template>
-		<ControlTemplate TargetType="TabControl">
-			<Grid>
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="*" />
-				</Grid.RowDefinitions>
-
-				<Border
-					Background="{TemplateBinding Background}"
-					BorderBrush="{TemplateBinding BorderBrush}"
-					BorderThickness="{TemplateBinding BorderThickness}">
-					<Grid x:Name="MainGrid">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="*" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
-
-						--><!--  ScrollViewer for Tabs  --><!--
-						<ScrollViewer
-							x:Name="TabScrollViewer"
-							Grid.Row="0"
-							Grid.Column="1"
-							HorizontalScrollBarVisibility="Hidden"
-							VerticalScrollBarVisibility="Hidden"
-							ScrollChanged="TabScrollViewer_ScrollChanged">
-							<TabPanel
-								x:Name="TabPanel"
-								Background="Transparent"
-								IsItemsHost="True"
-								Margin="0" />
-						</ScrollViewer>
-
-						--><!--  Left Scroll Button  --><!--
-						<Button
-							x:Name="LeftScrollButton"
-							Grid.Row="0"
-							Grid.Column="0"
-							Click="LeftScrollButton_Click"
-							Content="&lt;"
-							FontSize="16"
-							FontWeight="Bold"
-							Margin="2"
-							Padding="5,0"
-							Visibility="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorTemplate}, Converter={StaticResource DockOrientationVisibillity}, ConverterParameter=Horizontal}">
-						</Button>
-
-						--><!--  Right Scroll Button  --><!--
-						<Button
-							x:Name="RightScrollButton"
-							Grid.Row="0"
-							Grid.Column="2"
-							Click="RightScrollButton_Click"
-							Content=">"
-							FontSize="16"
-							FontWeight="Bold"
-							Margin="2"
-							Padding="5,0"
-							Visibility="{Binding TabStripPlacement, RelativeSource={RelativeSource AncestorTemplate}, Converter={StaticResource DockOrientationVisibillity}, ConverterParameter=Horizontal}">
-						</Button>
-
-						--><!--  Top Scroll Button  --><!--
-						<Button
-							x:Name="TopScrollButton"
-							Grid.Row="0"
-							Grid.Column="0"
-							Click="TopScrollButton_Click"
-							Content="^"
-							FontSize="16"
-							FontWeight="Bold"
-							Margin="2"
-							Padding="5,0"
-							Visibility="Collapsed">
-						</Button>
-
-						--><!--  Bottom Scroll Button  --><!--
-						<Button
-							x:Name="BottomScrollButton"
-							Grid.Row="2"
-							Grid.Column="0"
-							Click="BottomScrollButton_Click"
-							Content="v"
-							FontSize="16"
-							FontWeight="Bold"
-							Margin="2"
-							Padding="5,0"
-							Visibility="Collapsed">
-						</Button>
-
-						<ContentPresenter
-							Grid.Row="1"
-							Grid.Column="0"
-							Grid.ColumnSpan="3"
-							ContentSource="SelectedContent" />
-					</Grid>
-				</Border>
-				<ControlTemplate.Triggers>
-					<Trigger Property="TabStripPlacement" Value="Left">
-						<Setter TargetName="MainGrid" Property="Grid.ColumnDefinitions">
-							<Setter.Value>
-								<ColumnDefinitionCollection>
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition Width="*" />
-								</ColumnDefinitionCollection>
-							</Setter.Value>
-						</Setter>
-						<Setter TargetName="MainGrid" Property="Grid.RowDefinitions">
-							<Setter.Value>
-								<RowDefinitionCollection>
-									<RowDefinition Height="Auto" />
-									<RowDefinition Height="*" />
-									<RowDefinition Height="Auto" />
-								</RowDefinitionCollection>
-							</Setter.Value>
-						</Setter>
-						<Setter TargetName="TabScrollViewer" Property="Grid.Row" Value="1" />
-						<Setter TargetName="TabScrollViewer" Property="Grid.Column" Value="0" />
-						<Setter TargetName="LeftScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="RightScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="TopScrollButton" Property="Visibility" Value="Visible" />
-						<Setter TargetName="BottomScrollButton" Property="Visibility" Value="Visible" />
-					</Trigger>
-					<Trigger Property="TabStripPlacement" Value="Right">
-						<Setter TargetName="MainGrid" Property="Grid.ColumnDefinitions">
-							<Setter.Value>
-								<ColumnDefinitionCollection>
-									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition Width="*" />
-								</ColumnDefinitionCollection>
-							</Setter.Value>
-						</Setter>
-						<Setter TargetName="MainGrid" Property="Grid.RowDefinitions">
-							<Setter.Value>
-								<RowDefinitionCollection>
-									<RowDefinition Height="Auto" />
-									<RowDefinition Height="*" />
-									<RowDefinition Height="Auto" />
-								</RowDefinitionCollection>
-							</Setter.Value>
-						</Setter>
-						<Setter TargetName="TabScrollViewer" Property="Grid.Row" Value="1" />
-						<Setter TargetName="TabScrollViewer" Property="Grid.Column" Value="0" />
-						<Setter TargetName="LeftScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="RightScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="TopScrollButton" Property="Visibility" Value="Visible" />
-						<Setter TargetName="BottomScrollButton" Property="Visibility" Value="Visible" />
-					</Trigger>
-					<Trigger Property="TabStripPlacement" Value="Top">
-						<Setter TargetName="TopScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="BottomScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="LeftScrollButton" Property="Visibility" Value="Visible" />
-						<Setter TargetName="RightScrollButton" Property="Visibility" Value="Visible" />
-					</Trigger>
-					<Trigger Property="TabStripPlacement" Value="Bottom">
-						<Setter TargetName="TopScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="BottomScrollButton" Property="Visibility" Value="Collapsed" />
-						<Setter TargetName="LeftScrollButton" Property="Visibility" Value="Visible" />
-						<Setter TargetName="RightScrollButton" Property="Visibility" Value="Visible" />
-					</Trigger>
-				</ControlTemplate.Triggers>
-			</Grid>
-		</ControlTemplate>
-	</TabControl.Template>-->
 
 	<TabControl.ItemContainerStyle>
 		<Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
