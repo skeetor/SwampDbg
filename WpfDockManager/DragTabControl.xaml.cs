@@ -37,17 +37,9 @@ namespace WpfDockingManager
 
 	public partial class DragTabControl : TabControl
 	{
-		// TODO: This hack has to be refined
-		public static readonly double AspectRatioValue = 16/9;
-
 		#region Properties
 		public static readonly DependencyProperty TabHeightProperty =
 			DependencyProperty.Register("TabHeight", typeof(double), typeof(DragTabControl),
-				new PropertyMetadata(double.NaN, new PropertyChangedCallback(OnTabHeightChanged)));
-
-		// This value is set automatically to scale the TabHeight for vertical display.
-		public static readonly DependencyProperty TabHeightVProperty =
-			DependencyProperty.Register("TabHeightV", typeof(double), typeof(DragTabControl),
 				new PropertyMetadata(double.NaN));
 
 		public static readonly DependencyProperty CloseTabCommandProperty =
@@ -57,28 +49,6 @@ namespace WpfDockingManager
 		{
 			get { return (double)GetValue(TabHeightProperty); }
 			set { SetValue(TabHeightProperty, value); }
-		}
-		private static void OnTabHeightChanged(DependencyObject depObj, DependencyPropertyChangedEventArgs e)
-		{
-			//UIElement? child = depObj as UIElement;
-			//if (child == null)
-			//	return;
-
-			//DockingPosition dock = (DockingPosition)e.OldValue;
-			//if ((DockingPosition)e.OldValue == DockingPosition.None && (DockingPosition)e.NewValue != DockingPosition.None)
-			//{
-			//	DockingPanel? p = VisualTreeHelper.GetParent(child) as DockingPanel;
-			//	if (p == null)
-			//		return;
-
-			//	p.Refresh(child);
-			//}
-		}
-
-		public double TabHeightV
-		{
-			get { return ((double)GetValue(TabHeightVProperty)) * AspectRatioValue; }
-			set { SetValue(TabHeightVProperty, value); }
 		}
 
 		public ICommand CloseTabCommand

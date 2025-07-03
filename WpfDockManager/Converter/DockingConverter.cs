@@ -136,4 +136,15 @@ namespace WpfDockingManager
 			throw new NotImplementedException();
 		}
 	}
+
+	public class AspectRatioConverter : IValueConverter
+	{
+		public static double AspectRatioValue = 16/10;
+
+		public object Convert(object inputValue, Type targetType, object parameter, CultureInfo culture) =>
+			((double) inputValue) * AspectRatioValue;
+
+		public object ConvertBack(object inputValue, Type targetType, object parameter, CultureInfo culture) =>
+			((double) inputValue) / AspectRatioValue;
+	}
 }
