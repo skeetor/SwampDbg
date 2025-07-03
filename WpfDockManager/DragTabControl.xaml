@@ -389,7 +389,6 @@
 					</Setter>
 				</DataTrigger>
 			</Style.Triggers>
-			<Setter Property="Width" Value="{Binding TabWidth, RelativeSource={RelativeSource AncestorType={x:Type local:DockingGroup}}}"/>
 		</Style>
 	</TabControl.ItemContainerStyle>
 </TabControl>
