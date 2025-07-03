@@ -58,7 +58,7 @@ namespace WpfDockingManager
 		}
 		#endregion Properties
 		#region Events
-		public static readonly RoutedEvent ItemCloseEventEvent = EventManager.RegisterRoutedEvent(
+		private static readonly RoutedEvent ItemCloseEventEvent = EventManager.RegisterRoutedEvent(
 			 "ItemCloseEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
 
 		public event DragTabEventHandler ItemCloseEventHandlers
@@ -67,7 +67,7 @@ namespace WpfDockingManager
 			remove { RemoveHandler(ItemCloseEventEvent, value); }
 		}
 
-		public static readonly RoutedEvent ItemStartDraggingEventEvent = EventManager.RegisterRoutedEvent(
+		private static readonly RoutedEvent ItemStartDraggingEventEvent = EventManager.RegisterRoutedEvent(
 			 "ItemStartDraggingEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
 
 		public event DragTabEventHandler ItemStartDraggingEventHandlers
@@ -76,7 +76,7 @@ namespace WpfDockingManager
 			remove { RemoveHandler(ItemStartDraggingEventEvent, value); }
 		}
 
-		public static readonly RoutedEvent ItemStopDraggingEventEvent = EventManager.RegisterRoutedEvent(
+		private static readonly RoutedEvent ItemStopDraggingEventEvent = EventManager.RegisterRoutedEvent(
 			 "ItemStopDraggingEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
 
 		public event DragTabEventHandler ItemStopDraggingEventHandlers

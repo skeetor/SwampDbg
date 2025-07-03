@@ -9,6 +9,9 @@ namespace WpfDockingManager
 {
 	public partial class DockingGroup : Grid
 	{
+		private static int ItemIdCounter = 0;
+		private int ActualItemId = ItemIdCounter++;
+
 		#region Properties
 		public static readonly DependencyProperty TabPositionProperty =
 			DependencyProperty.Register("TabPosition", typeof(Dock), typeof(DockingGroup),
@@ -79,6 +82,12 @@ namespace WpfDockingManager
 		public DockingGroup()
 		{
 			InitializeComponent();
+		}
+
+		public event DragTabEventHandler ItemCloseEventHandlers
+		{
+			add { _tabControl.ItemCloseEventHandlers += value; }
+			remove { _tabControl.ItemCloseEventHandlers -= value; }
 		}
 
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)

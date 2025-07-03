@@ -380,7 +380,23 @@ namespace WpfDockingManager
 				LayoutItems -= visualRemoved;
 			}
 
+			if (visualAdded is DockingGroup addGroup)
+				UpdateGroupEventHandlers(addGroup, true);
+
+			if (visualRemoved is DockingGroup removeGroup)
+				UpdateGroupEventHandlers(removeGroup, false);
+
 			base.OnVisualChildrenChanged(visualAdded, visualRemoved);
+		}
+
+		private void UpdateGroupEventHandlers(DockingGroup group, bool add)
+		{
+			group.ItemCloseEventHandlers -= OnElementCloseHandler;
+
+			if (add)
+			{
+				group.ItemCloseEventHandlers += OnElementCloseHandler;
+			}
 		}
 
 		protected override Size MeasureOverride(Size availableSize)
@@ -451,8 +467,13 @@ namespace WpfDockingManager
 				tabControl = new DockingGroup();
 
 			tabControl.InsertItem(element, index);
+			UpdateGroupEventHandlers(tabControl, true);
 
 			return tabControl;
+		}
+
+		private void OnElementCloseHandler(object? sender, DragTabItemEventArgs e)
+		{
 		}
 
 		/// <summary>
@@ -518,6 +539,7 @@ namespace WpfDockingManager
 						RootSplitter.Add(tabControl);
 
 					UpdateLength(item, VisualTreeHelper.GetParent(tabControl) as DockingSplitter, tabControl);
+					UpdateGroupEventHandlers(tabControl, true);
 				}
 				break;
 
@@ -627,6 +649,7 @@ namespace WpfDockingManager
 
 			parent.Insert(tabControl, index);
 
+			UpdateGroupEventHandlers(tabControl, true);
 			UpdateLength(element, parent, tabControl);
 		}
 
