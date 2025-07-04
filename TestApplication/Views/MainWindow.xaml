@@ -63,7 +63,7 @@
 		</StackPanel>
 
 		<DMNS:DockingPanel Grid.Row="1" Name="RootDockPanel">
-			<DMNS:DockingGroup TabPosition="Left" TabHeight="30" DockAnchor="PropertyGroup">
+			<DMNS:DockingGroup TabStripPlacement="Left" TabHeight="30" DockAnchor="PropertyGroup">
 				<Button DMNS:DockingPanel.DockTitle="Testbutton1">Testbutton1</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton2" DMNS:DockingPanel.DockAnchor="TestGroup">Testbutton2</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton3">Testbutton3</Button>
@@ -71,7 +71,7 @@
 				<Button DMNS:DockingPanel.DockTitle="Testbutton5">Testbutton5</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton6">Testbutton6</Button>
 			</DMNS:DockingGroup>
-			<DMNS:DockingGroup TabPosition="Top" TabHeight="30" DockTarget="PropertyGroup" DockPosition="Right" DockLength="200">
+			<DMNS:DockingGroup TabStripPlacement="Top" TabHeight="30" DockTarget="PropertyGroup" DockPosition="Right" DockLength="200">
 				<Button DMNS:DockingPanel.DockTitle="Testbutton4">Testbutton4</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton5">Testbutton5</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton6">Testbutton6</Button>

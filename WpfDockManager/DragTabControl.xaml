@@ -17,9 +17,9 @@
 	<TabControl.Resources>
 		<local:TabItemRotation x:Key="TabItemRotation"/>
 		<local:DockOrientationConverter x:Key="DockOrientationConverter"/>
-        <local:GridRowAdjustmentConverter x:Key="GridRowAdjustment"/>
-        <local:NotEqualConverter x:Key="NotEqual"/>
-        <local:AspectRatioConverter x:Key="AspectRatio"/>
+		<local:GridRowAdjustmentConverter x:Key="GridRowAdjustment"/>
+		<local:NotEqualConverter x:Key="NotEqual"/>
+		<local:AspectRatioConverter x:Key="AspectRatio"/>
 		
 		<Style x:Key="CloseButtonStyle" TargetType="Button">
 			<Setter Property="Background" Value="Transparent"/>
@@ -209,54 +209,54 @@
 					</Grid.Style>
 				</Grid>
 
-                <!-- Right placement -->
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+				<!-- Right placement -->
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
 
-                    <Button Tag="ScrollBtnUp" Visibility="Visible"
+					<Button Tag="ScrollBtnUp" Visibility="Visible"
 							Grid.Column="1" Grid.Row="0"
 							FontWeight="Bold" Content="&#x2191;" Margin="0,0,5,0"
 							Click="OnScrollUpButton"/>
 
-                    <Button Tag="ScrollBtnDown" Visibility="Visible"
+					<Button Tag="ScrollBtnDown" Visibility="Visible"
 							Grid.Column="1" Grid.Row="2"
 							FontWeight="Bold" Content="&#x2193;" Margin="0,0,5,0"
 							Click="OnScrollDownButton"/>
 
-                    <ScrollViewer Grid.Column="1" Grid.Row="1"
+					<ScrollViewer Grid.Column="1" Grid.Row="1"
 								  HorizontalScrollBarVisibility="Hidden"
 								  VerticalScrollBarVisibility="Hidden"
 								  ScrollChanged="OnScrollChangedVertically">
-                        <StackPanel Orientation="Vertical">
-                            <TabPanel IsItemsHost="True" Margin="0"/>
-                        </StackPanel>
-                    </ScrollViewer>
-                    <ContentPresenter Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" ContentSource="SelectedContent"/>
+						<StackPanel Orientation="Vertical">
+							<TabPanel IsItemsHost="True" Margin="0"/>
+						</StackPanel>
+					</ScrollViewer>
+					<ContentPresenter Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" ContentSource="SelectedContent"/>
 
-                    <Grid.Style>
-                        <Style TargetType="Grid">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent},
+					<Grid.Style>
+						<Style TargetType="Grid">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent},
 															Path=TabStripPlacement,
 															Converter={StaticResource NotEqual},
 															ConverterParameter=Right}"
 															Value="True">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Grid.Style>
-                </Grid>
-            </Grid>
+									<Setter Property="Visibility" Value="Collapsed"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Grid.Style>
+				</Grid>
+			</Grid>
 		</ControlTemplate>
 	</TabControl.Template>
 

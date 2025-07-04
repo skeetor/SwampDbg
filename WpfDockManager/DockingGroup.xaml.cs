@@ -13,8 +13,8 @@ namespace WpfDockingManager
 		private int ActualItemId = ItemIdCounter++;
 
 		#region Properties
-		public static readonly DependencyProperty TabPositionProperty =
-			DependencyProperty.Register("TabPosition", typeof(Dock), typeof(DockingGroup),
+		public static readonly DependencyProperty TabStripPlacementProperty =
+			DependencyProperty.Register("TabStripPlacement", typeof(Dock), typeof(DockingGroup),
 				new PropertyMetadata(Dock.Top));
 
 		public static readonly DependencyProperty TabHeightProperty =
@@ -30,10 +30,10 @@ namespace WpfDockingManager
 		public static readonly DependencyProperty DockLengthProperty = DockingPanel.DockLengthProperty;
 		public static readonly DependencyProperty DockTitleProperty = DockingPanel.DockTitleProperty;
 
-		public Dock TabPosition
+		public Dock TabStripPlacement
 		{
-			get { return (Dock)GetValue(TabPositionProperty); }
-			set { SetValue(TabPositionProperty, value); }
+			get { return (Dock)GetValue(TabStripPlacementProperty); }
+			set { SetValue(TabStripPlacementProperty, value); }
 		}
 
 		public double TabHeight
