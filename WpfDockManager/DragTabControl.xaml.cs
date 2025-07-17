@@ -264,7 +264,11 @@ namespace WpfDockingManager
 				SourceIndex = DragState.TabIndex,
 				TargetIndex = -1
 			};
+
 			RaiseEvent(ev);
+			if (!ev.Handled)
+				OnItemStartDraggingHandler(this, ev);
+
 			if (ev.Cancel)
 			{
 				DragState = new DragStateInfo();
@@ -329,6 +333,8 @@ namespace WpfDockingManager
 				TargetIndex = targetIndex
 			};
 			RaiseEvent(ev);
+			if (!ev.Handled)
+				OnItemStopDraggingHandler(this, ev);
 		}
 
 		private void OnScrollLeftButton(object sender, RoutedEventArgs e)
