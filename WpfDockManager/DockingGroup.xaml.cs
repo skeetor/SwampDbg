@@ -10,7 +10,7 @@ namespace WpfDockingManager
 	public partial class DockingGroup : Grid
 	{
 		private static int ItemIdCounter = 0;
-		private int ActualItemId = ItemIdCounter++;
+		private int AAAActualItemId = ItemIdCounter++;
 
 		#region Properties
 		public static readonly DependencyProperty TabStripPlacementProperty =
@@ -84,11 +84,7 @@ namespace WpfDockingManager
 			InitializeComponent();
 		}
 
-		public event DragTabEventHandler ItemCloseEventHandlers
-		{
-			add { _tabControl.ItemCloseEventHandlers += value; }
-			remove { _tabControl.ItemCloseEventHandlers -= value; }
-		}
+		public DragTabControl DragTabControl { get { return _tabControl;  } }
 
 		protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
 		{
@@ -145,7 +141,7 @@ namespace WpfDockingManager
 			_tabControl.Items.Insert(index, ti);
 		}
 
-		private void OnCloseButtonEvent(object sender, RoutedEventArgs e)
+		private void OnItemClose(object sender, RoutedEventArgs e)
 		{
 			var button = sender as DependencyObject;
 			if (button == null)

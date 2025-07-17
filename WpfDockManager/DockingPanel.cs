@@ -331,6 +331,12 @@ namespace WpfDockingManager
 			CreateLayout(items);
 		}
 
+		//public event DragTabEventHandler ItemCloseEventHandlers
+		//{
+		//	add { AddHandler(DragTabControl.ItemCloseEvent, value); }
+		//	remove { RemoveHandler(DragTabControl.ItemCloseEvent, value); }
+		//}
+
 		public bool IsEmpty() => RootSplitter.IsEmpty();
 
 		public static void UpdateDockAnchor(UIElement element, string value)
@@ -391,12 +397,10 @@ namespace WpfDockingManager
 
 		private void UpdateGroupEventHandlers(DockingGroup group, bool add)
 		{
-			group.ItemCloseEventHandlers -= OnElementCloseHandler;
+			group.DragTabControl.ItemCloseEventHandlers -= OnElementCloseHandler;
 
 			if (add)
-			{
-				group.ItemCloseEventHandlers += OnElementCloseHandler;
-			}
+				group.DragTabControl.ItemCloseEventHandlers += OnElementCloseHandler;
 		}
 
 		protected override Size MeasureOverride(Size availableSize)
@@ -474,6 +478,7 @@ namespace WpfDockingManager
 
 		private void OnElementCloseHandler(object? sender, DragTabItemEventArgs e)
 		{
+			Console.WriteLine("Test");
 		}
 
 		/// <summary>

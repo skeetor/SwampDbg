@@ -52,13 +52,41 @@ namespace WpfDockingManager
 		}
 		#endregion Properties
 		#region Events
-		private static readonly RoutedEvent ItemCloseEventEvent = EventManager.RegisterRoutedEvent(
-			 "ItemCloseEvent", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
+		public static readonly RoutedEvent ItemCloseEvent = EventManager.RegisterRoutedEvent(
+			 "ItemClose", RoutingStrategy.Bubble, typeof(DragTabEventHandler), typeof(DragTabItemEventArgs));
 
 		public event DragTabEventHandler ItemCloseEventHandlers
 		{
-			add { AddHandler(ItemCloseEventEvent, value); }
-			remove { RemoveHandler(ItemCloseEventEvent, value); }
+			add
+			{
+				// Make sure our own handler is last in the line. So if any user handler was handling
+				// the event they should be called first, and our own handler should only be called when
+				// the default action should be placed.
+				//if (value != OnItemCloseHandler)
+				//	ItemCloseEventHandlers -= OnItemCloseHandler;
+
+				AddHandler(ItemCloseEvent, value);
+
+				//if (value != OnItemCloseHandler)
+				//	ItemCloseEventHandlers += OnItemCloseHandler;
+			}
+			remove { RemoveHandler(ItemCloseEvent, value); }
+		}
+
+		public static void AddItemCloseHandler(DependencyObject dependencyObject, RoutedEventHandler handler)
+		{
+			if (dependencyObject is not UIElement uiElement)
+				return;
+
+			uiElement.AddHandler(ItemCloseEvent, handler);
+		}
+
+		public static void RemoveItemCloseHandler(DependencyObject dependencyObject, RoutedEventHandler handler)
+		{
+			if (dependencyObject is not UIElement uiElement)
+				return;
+
+			uiElement.RemoveHandler(ItemCloseEvent, handler);
 		}
 
 		private static readonly RoutedEvent ItemStartDraggingEventEvent = EventManager.RegisterRoutedEvent(
@@ -86,9 +114,9 @@ namespace WpfDockingManager
 		{
 			InitializeComponent();
 
-			ItemStartDraggingEventHandlers += OnItemStartDraggingHandler;
-			ItemStopDraggingEventHandlers += OnItemStopDraggingHandler;
-			ItemCloseEventHandlers += OnItemCloseHandler;
+			//ItemStartDraggingEventHandlers += OnItemStartDraggingHandler;
+			//ItemStopDraggingEventHandlers += OnItemStopDraggingHandler;
+			//ItemCloseEventHandlers += OnItemCloseHandler;
 		}
 
 		private void OnItemStartDraggingHandler(object? sender, DragTabItemEventArgs e)
@@ -149,6 +177,7 @@ namespace WpfDockingManager
 			e.Handled = true;
 		}
 
+		// Handler from the original button
 		private void OnCloseButtonEvent(object sender, RoutedEventArgs e)
 		{
 			var button = sender as DependencyObject;
@@ -161,13 +190,20 @@ namespace WpfDockingManager
 			if (tabControl == null || tabControl != this)
 				return;
 
-			var eventArgs = new DragTabItemEventArgs(ItemCloseEventEvent)
+			var eventArgs = new DragTabItemEventArgs(ItemCloseEvent, this)
 			{
 				TabItem = tabItem,
 				SourceIndex = tabControl.Items.IndexOf(tabItem)
 			};
 
 			RaiseEvent(eventArgs);
+			// We execute the default action when the event was not handled by anyone.
+			// We do this manually instead of subscribing to our own event handler, because
+			// the call order of the event handlers is not guaruanteed. When our own handler
+			// comes first, and marks the event as handled, then no other handler will receive
+			// it.
+			if (!eventArgs.Handled)
+				OnItemCloseHandler(this, eventArgs);
 		}
 
 		private DragTabControl? FindContainers(DependencyObject element, out TabItem? tabItem)

@@ -71,11 +71,11 @@
 				<Button DMNS:DockingPanel.DockTitle="Testbutton5">Testbutton5</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton6">Testbutton6</Button>
 			</DMNS:DockingGroup>
-			<DMNS:DockingGroup TabStripPlacement="Top" TabHeight="30" DockTarget="PropertyGroup" DockPosition="Right" DockLength="200">
+			<!--<DMNS:DockingGroup TabStripPlacement="Top" TabHeight="30" DockTarget="PropertyGroup" DockPosition="Right" DockLength="200">
 				<Button DMNS:DockingPanel.DockTitle="Testbutton4">Testbutton4</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton5">Testbutton5</Button>
 				<Button DMNS:DockingPanel.DockTitle="Testbutton6">Testbutton6</Button>
-			</DMNS:DockingGroup>
+			</DMNS:DockingGroup>-->
 			<!--<uc:TestControl
 				DMNS:DockingPanel.DockLength="100"
 				DMNS:DockingPanel.DockTarget="TestGroup"
